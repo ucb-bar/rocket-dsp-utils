@@ -31,4 +31,3 @@ Questions:
     
 This code is maintained by [Chick](https://github.com/chick)
 
-Copyright (c) 2015 - 2021 The Regents of the University of California. Released under the Modified (3-clause) BSD license.

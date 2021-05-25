@@ -3,13 +3,12 @@
 package dspblocks
 
 import chisel3._
-import freechips.rocketchip.BundleBridgeToTL
 import freechips.rocketchip.amba.ahb._
 import freechips.rocketchip.amba.apb._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.tilelink._
+import freechips.rocketchip.tilelink.{BundleBridgeToTL, _}
 
 /**
   * Base trait for basic unit of computation

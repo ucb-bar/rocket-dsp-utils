@@ -4,12 +4,11 @@ package freechips.rocketchip.jtag2mm
 
 import chisel3._
 import chisel3.util._
-import freechips.rocketchip.TLToBundleBridge
 import chipsalliance.rocketchip.config.Parameters
 import chisel3.experimental.{ChiselEnum, IO}
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.amba.axi4._
-import freechips.rocketchip.tilelink._
+import freechips.rocketchip.tilelink.{TLToBundleBridge, _}
 
 
 class JtagToMasterControllerIO(irLength: Int, beatBytes: Int) extends JtagBlockIO(irLength) {

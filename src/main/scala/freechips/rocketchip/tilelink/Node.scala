@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
-package freechips.rocketchip
+package freechips.rocketchip.tilelink
 
 import chipsalliance.rocketchip.config.Parameters
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.tilelink._
 
 object TLBundleBridgeImp extends BundleBridgeImp[TLBundle]
 

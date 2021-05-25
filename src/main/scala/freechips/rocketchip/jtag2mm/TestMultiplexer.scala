@@ -4,14 +4,13 @@ package freechips.rocketchip.jtag2mm
 
 import chisel3._
 import chisel3.experimental._
-import freechips.rocketchip.BundleBridgeToTL
 import chipsalliance.rocketchip.config.Parameters
 import freechips.rocketchip.diplomacy._
 import dspblocks._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.regmapper.RegField
-import freechips.rocketchip.tilelink._
+import freechips.rocketchip.tilelink.{BundleBridgeToTL, _}
 
 
 abstract class TestMultiplexer[D, U, EO, EI, B <: Data]()(implicit p: Parameters)
@@ -53,15 +52,13 @@ class Jtag2TLMultiplexer(
       sinkBits = 16,
       sizeBits = 3,
       //TODO: CHIUPYARD: figure this out
-      echoFields = Seq.empty,
-      requestFields = Seq.empty,
-      responseFields = Seq.empty,
-//      aUserBits = 0,
-//      dUserBits = 0,
+      echoFields = Nil,
+      requestFields = Nil,
+      responseFields = Nil,
       hasBCE = false
     )
 
-    //TODO: CHIPYAR
+    //TODO: CHIPYARD
     val clientParams = TLClientParameters(
       name = "BundleBridgeToTL",
       sourceId = IdRange(0, 1),

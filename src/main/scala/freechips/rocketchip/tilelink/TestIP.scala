@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
-package freechips.rocketchip
+package freechips.rocketchip.tilelink
 
 import chisel3.MultiIOModule
-import chipsalliance.rocketchip.config.Parameters
 import dsptools.tester.MemMasterModel
-import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.tilelink._
-
 
 object TLMasterModel {
   case class AChannel(

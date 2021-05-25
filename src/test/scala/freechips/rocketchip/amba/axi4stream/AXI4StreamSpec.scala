@@ -4,7 +4,6 @@ import breeze.stats.distributions.Uniform
 import chisel3._
 import chisel3.iotesters.PeekPokeTester
 import dsptools.tester.MemMasterModel
-import freechips.rocketchip.{BundleBridgeToTL, TLMasterModel}
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream
 import freechips.rocketchip.config.Parameters

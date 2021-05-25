@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+git.remoteRepo := "git@github.com:ucb-bar/dsptools.git"
+
 enablePlugins(SiteScaladocPlugin)
 
 enablePlugins(GhpagesPlugin)

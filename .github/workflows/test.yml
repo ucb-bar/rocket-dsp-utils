@@ -26,15 +26,15 @@ jobs:
       - name: Setup Hardfloat
         uses: actions/checkout@v2
         with:
-          repository: https://github.com/ucb-bar/berkeley-hardfloat.git
+          repository: ucb-bar/berkeley-hardfloat.git
       - name: Setup chipsalliance-api-config
         uses: actions/checkout@v2
         with:
-          repository: https://github.com/chipsalliance/api-config-chipsalliance.git
+          repository: chipsalliance/api-config-chipsalliance.git
       - name: Setup rocket-chip
         uses: actions/checkout@v2
         with:
-          repository: https://github.com/chipsalliance/api-config-chipsalliance.git
+          repository: chipsalliance/rocket-chip.git
       - name: show location
         run: pwd && ls -ltr
       - name: Documentation

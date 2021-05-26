@@ -17,14 +17,26 @@ jobs:
       CONTAINER_HOME: /home/github
 
     steps:
-#      - name: Fix permissions
-#        run: sudo chown -R riscvuser . ~riscvuser /github/home
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Scala
         uses: olafurpg/setup-scala@v10
       - name: Cache
         uses: coursier/cache-action@v5
+      - name: Setup Hardfloat
+        uses: actions/checkout@v2
+        with:
+          repository: https://github.com/ucb-bar/berkeley-hardfloat.git
+      - name: Setup chipsalliance-api-config
+        uses: actions/checkout@v2
+        with:
+          repository: https://github.com/chipsalliance/api-config-chipsalliance.git
+      - name: Setup rocket-chip
+        uses: actions/checkout@v2
+        with:
+          repository: https://github.com/chipsalliance/api-config-chipsalliance.git
+      - name: show location
+        run: pwd && ls -ltr
       - name: Documentation
         id: doc
         run: sbt doc

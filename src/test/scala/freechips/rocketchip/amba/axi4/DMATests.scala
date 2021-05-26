@@ -253,6 +253,6 @@ class DmaSpec extends AnyFlatSpec with Matchers {
     })
     (new ChiselStage).execute(Array[String](), Seq(ChiselGeneratorAnnotation(() => lazyDut.module)))
     //TODO: CHIPYARD, is the above what is wanted
-    // chisel3.Driver.execute(Array[String](), () => lazyDut.module)
+//     chisel3.Driver.execute(Array[String](), () => lazyDut.module)
   }
 }

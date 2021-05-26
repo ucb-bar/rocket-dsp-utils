@@ -17,6 +17,8 @@ jobs:
       CONTAINER_HOME: /home/github
 
     steps:
+      - name: Fix permissions
+        run: sudo chown -R riscvuser . ~riscvuser /github/home
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Scala

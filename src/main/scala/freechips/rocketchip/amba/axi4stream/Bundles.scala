@@ -32,7 +32,6 @@ class AXI4StreamBundlePayload(params: AXI4StreamBundleParameters) extends AXI4St
   * @param params Bundle parameters
   */
 class AXI4StreamBundle(val params: AXI4StreamBundleParameters) extends IrrevocableIO(new AXI4StreamBundlePayload(params)) {
-  override def cloneType= new AXI4StreamBundle(params).asInstanceOf[this.type]
 }
 
 /**
@@ -40,7 +39,6 @@ class AXI4StreamBundle(val params: AXI4StreamBundleParameters) extends Irrevocab
   * @param params Bundle parameters
   */
 class AXI4StreamValidBundle(val params: AXI4StreamBundleParameters) extends ValidIO(new AXI4StreamBundlePayload(params)) {
-  override def cloneType = new AXI4StreamValidBundle(params).asInstanceOf[this.type]
 }
 
 object AXI4StreamBundle
@@ -69,7 +67,6 @@ object AXI4StreamValidBundle
   */
 class AXI4StreamAsyncBundle(params: AXI4StreamAsyncBundleParameters)
   extends AsyncBundle(new AXI4StreamBundlePayload(params.base).cloneType, params.async) {
-  override def cloneType: this.type = new AXI4StreamAsyncBundle(params).asInstanceOf[this.type]
 }
 
 object AXI4StreamAsyncBundle {

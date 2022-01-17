@@ -10,7 +10,6 @@ trait WithSync {
 }
 
 class ValidWithSync[+T <: Data](gen: T) extends Valid[T](gen) with WithSync {
-  override def cloneType: this.type = ValidWithSync(gen).asInstanceOf[this.type]
 }
 
 object ValidWithSync {
@@ -18,7 +17,6 @@ object ValidWithSync {
 }
 
 class DecoupledWithSync[+T <: Data](gen: T) extends DecoupledIO[T](gen) with WithSync {
-  override def cloneType: this.type = DecoupledWithSync(gen).asInstanceOf[this.type]
 }
 
 object DecoupledWithSync {

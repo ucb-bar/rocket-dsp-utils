@@ -23,7 +23,6 @@ class JtagOutput(irLength: Int) extends Bundle {
   val instruction = Output(UInt(irLength.W)) // current active instruction
   val reset = Output(Bool()) // synchronous reset asserted in Test-Logic-Reset state, should NOT hold the FSM in reset
 
-  override def cloneType = new JtagOutput(irLength).asInstanceOf[this.type]
 }
 
 class JtagControl extends Bundle {

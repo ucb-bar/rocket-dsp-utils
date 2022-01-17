@@ -60,8 +60,6 @@ class SimpleDMARequest(addrWidth: Int, lenWidth: Int) extends Bundle {
     */
   val fixedAddress: UInt = Bool()
 
-  override def cloneType: this.type =
-    SimpleDMARequest(addrWidth = addrWidth, lenWidth = lenWidth).asInstanceOf[this.type]
 }
 object SimpleDMARequest {
   def apply(addrWidth: Int, lenWidth: Int): SimpleDMARequest =
@@ -72,9 +70,6 @@ class DMASimplifierIO(addrWidth: Int, complexLenWidth: Int, simpleLenWidth: Int)
   val in = Flipped(Decoupled(DMARequest(addrWidth, complexLenWidth)))
   val out = Decoupled(SimpleDMARequest(addrWidth, simpleLenWidth))
 
-  override def cloneType: this.type =
-    new DMASimplifierIO(addrWidth = addrWidth, complexLenWidth = complexLenWidth, simpleLenWidth = simpleLenWidth).
-      asInstanceOf[this.type]
 }
 class DMASimplifier(val addrWidth: Int, val complexLenWidth: Int, val simpleLenWidth: Int, val beatBytes: Int)
   extends Module {

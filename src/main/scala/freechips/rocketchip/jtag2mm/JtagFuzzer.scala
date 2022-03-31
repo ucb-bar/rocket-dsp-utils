@@ -28,8 +28,8 @@ class JtagFuzzer(irLength: Int, beatBytes: Int, numOfTransfers: Int) extends Mod
     val sIdle, sTCK, sTMS, sTCKandTMS, sNone, sDataTCK, sDataTMS, sDataTCKandTMS, sDataNone  = Value
   }
   
-  val lfsrAddrReg = RegInit(UInt(16.W), 0.U)
-  lfsrAddrReg := LFSR(14) << 2
+  val lfsrAddrReg = RegInit(UInt(32.W), 0.U)
+  lfsrAddrReg := LFSR(30) << 2
   val lfsrDataReg = RegInit(UInt(32.W), 0.U)
   lfsrDataReg := LFSR(32)
   
@@ -310,7 +310,7 @@ class JtagFuzzer(irLength: Int, beatBytes: Int, numOfTransfers: Int) extends Mod
       io.TCK := false.B
       io.TMS := true.B
       when(stateCounter === 68.U) {
-        io.TDI := lfsrAddrReg(15)
+        io.TDI := lfsrAddrReg(31)
       } .elsewhen(stateCounter === 162.U) {
         io.TDI := lfsrDataReg(31)
       } .otherwise {
@@ -341,7 +341,7 @@ class JtagFuzzer(irLength: Int, beatBytes: Int, numOfTransfers: Int) extends Mod
       io.TCK := true.B
       io.TMS := true.B
       when(stateCounter === 69.U) {
-        io.TDI := lfsrAddrReg(15)
+        io.TDI := lfsrAddrReg(31)
       } .elsewhen(stateCounter === 163.U) {
         io.TDI := lfsrDataReg(31)
       } .otherwise {

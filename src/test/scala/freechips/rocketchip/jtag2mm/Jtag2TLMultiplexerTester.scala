@@ -108,7 +108,7 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
     
     // write value 0x08 to address 0x00 
     jtagSend(BigInt("0010", 2), 4, false, true, stepSize)
-    jtagSend(BigInt("0" * 32, 2), 32, true, false, stepSize)
+    jtagSend(BigInt("0" * 64, 2), 64, true, false, stepSize)
     jtagSend(BigInt("0011", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 56 ++ "00001000", 2), 64, true, false, stepSize)
     jtagSend(BigInt("0001", 2), 4, false, false, stepSize)
@@ -122,7 +122,7 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
 
   /*jtagReset(stepSize)
   jtagSend(BigInt("0010", 2), 4, false, true, stepSize)
-  jtagSend(BigInt("0"*32, 2), 32, true, false, stepSize)
+  jtagSend(BigInt("0"*64, 2), 64, true, false, stepSize)
   jtagSend(BigInt("0011", 2), 4, false, false, stepSize)
   jtagSend(BigInt("0"*56 ++ "00011000", 2), 64, true, false, stepSize)
   jtagSend(BigInt("0001", 2), 4, false, false, stepSize)*/
@@ -131,7 +131,7 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
   
     // set start address for burst write to 0x08 and number of burst transactions to 2
     jtagSend(BigInt("0010", 2), 4, false, false, stepSize)
-    jtagSend(BigInt("0" * 24 ++ "00001000", 2), 32, true, false, stepSize)
+    jtagSend(BigInt("0" * 56 ++ "00001000", 2), 64, true, false, stepSize)
     jtagSend(BigInt("1000", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 6 ++ "10", 2), 8, true, false, stepSize)
     
@@ -194,7 +194,7 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
   
     // set start address for burst read to 0x00 and number of burst transactions to 3
     jtagSend(BigInt("0010", 2), 4, false, false, stepSize)
-    jtagSend(BigInt("0" * 32, 2), 32, true, false, stepSize)
+    jtagSend(BigInt("0" * 64, 2), 64, true, false, stepSize)
     jtagSend(BigInt("1000", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 6 ++ "11", 2), 8, true, false, stepSize)
     

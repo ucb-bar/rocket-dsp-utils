@@ -120,7 +120,7 @@ class APBRegmapExample extends APBRegisterRouter(0,
 }
 
 class MemMasterSpec extends AnyFlatSpec with Matchers {
-  abstract class RegmapExampleTester[M <: MultiIOModule](c: M) extends PeekPokeTester(c) with MemMasterModel {
+  abstract class RegmapExampleTester[M <: Module](c: M) extends PeekPokeTester(c) with MemMasterModel {
     memReadWord(0x00) should be (0)
     memReadWord(0x08) should be (1)
     memReadWord(0x10) should be (0)

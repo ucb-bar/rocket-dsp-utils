@@ -116,7 +116,7 @@ object AXI4StreamWidthAdapter {
 
   def nToOneOrAdapater(n: Int): AdapterFun = (u, iv, or) => {
     val cat = nToOneCatAdapter(n)(u, iv, or)
-    (cat._1.orR(), cat._2, cat._3)
+    (cat._1.orR, cat._2, cat._3)
   }
 
   def nToOne(n: Int): AXI4StreamAdapterNode =

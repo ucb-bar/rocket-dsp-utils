@@ -103,7 +103,7 @@ class CaptureChain[+T <: Data](gen: T) extends Chain {
   io.chainOut.data := regs(0)
 
   when(io.chainIn.capture) {
-    (0 until n).map(x => regs(x) := io.capture.bits.asUInt()(x))
+    (0 until n).map(x => regs(x) := io.capture.bits.asUInt(x))
     io.capture.capture := true.B
   }.elsewhen(io.chainIn.shift) {
     regs(n - 1) := io.chainIn.data
@@ -164,7 +164,7 @@ class CaptureUpdateChain[+T <: Data, +V <: Data](genCapture: T, genUpdate: V) ex
     io.update.bits := 0.U
   }
 
-  val captureBits = io.capture.bits.asUInt()
+  val captureBits = io.capture.bits.asUInt
 
   when(io.chainIn.capture) {
     (0 until math.min(n, captureWidth)).map(x => regs(x) := captureBits(x))

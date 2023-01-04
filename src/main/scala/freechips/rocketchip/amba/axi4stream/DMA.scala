@@ -124,7 +124,8 @@ class StreamingAXI4DMA
       maxFlight = Some(2)
     )))))
 
-  lazy val module = new LazyModuleImp(this) {
+  lazy val module = new Impl
+  class Impl extends LazyModuleImp(this) {
     val (in, inP) = streamNode.in.head
     val (out, outP) = streamNode.out.head
     val (axi, axiP) = axiNode.out.head
@@ -320,7 +321,8 @@ class StreamingAXI4DMAWithCSR
 
   val streamNode = dma.streamNode
 
-  lazy val module = new LazyModuleImp(this) {
+  lazy val module = new Impl
+  class Impl extends LazyModuleImp(this) {
     val dma = outer.dma.module
 
     val enReg = RegInit(false.B)
@@ -442,7 +444,8 @@ class StreamingAXI4DMAWithMemory
 
   ram := AXI4Fragmenter() := dma.axiNode
 
-  lazy val module = new LazyModuleImp(this) {
+  lazy val module = new Impl
+  class Impl extends LazyModuleImp(this) {
     val (streamIn, inP) = lhs.in.head
     val (streamOut, outP) = rhs.out.head
     // val axiP =

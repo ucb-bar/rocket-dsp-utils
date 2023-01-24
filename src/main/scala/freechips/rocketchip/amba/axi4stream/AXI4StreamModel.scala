@@ -242,7 +242,7 @@ class AXI4StreamPeekPokeSlave(port: AXI4StreamBundle, tester: PeekPokeTester[_])
   }
 }
 
-trait AXI4StreamMasterModel extends PeekPokeTester[MultiIOModule] {
+trait AXI4StreamMasterModel extends PeekPokeTester[Module] {
   protected var masters: Seq[AXI4StreamPeekPokeMaster] = Seq()
 
   def resetMaster(port: AXI4StreamBundle): Unit = {
@@ -284,7 +284,7 @@ trait AXI4StreamMasterModel extends PeekPokeTester[MultiIOModule] {
   }
 }
 
-trait AXI4StreamSlaveModel extends PeekPokeTester[MultiIOModule] {
+trait AXI4StreamSlaveModel extends PeekPokeTester[Module] {
   protected var slaves: Seq[AXI4StreamPeekPokeSlave] = Seq()
 
   def resetSlave(port: AXI4StreamBundle): Unit = {

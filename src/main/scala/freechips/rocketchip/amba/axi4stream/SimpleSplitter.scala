@@ -1,7 +1,6 @@
 package freechips.rocketchip.amba.axi4stream
 
 import chisel3._
-import freechips.rocketchip.amba.axi4stream.{AXI4StreamMasterPortParameters, AXI4StreamNexusNode, AXI4StreamSlavePortParameters}
 import freechips.rocketchip.config.Parameters
 import freechips.rocketchip.diplomacy._
 

@@ -2,7 +2,7 @@
 
 package freechips.rocketchip.tilelink
 
-import chipsalliance.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 
 object TLBundleBridgeImp extends BundleBridgeImp[TLBundle]

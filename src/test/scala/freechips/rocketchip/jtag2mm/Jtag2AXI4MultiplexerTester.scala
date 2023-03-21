@@ -2,7 +2,7 @@
 
 package freechips.rocketchip.jtag2mm
 
-import chipsalliance.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import dsptools.DspTester
 import freechips.rocketchip.diplomacy.{AddressSet, LazyModule}
 import org.scalatest.flatspec.AnyFlatSpec

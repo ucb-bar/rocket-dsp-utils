@@ -1,7 +1,7 @@
 package freechips.rocketchip.amba.axi4stream
 
 import chisel3.util.Queue
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 
 class AXI4StreamBuffer(params: BufferParams) extends LazyModule()(Parameters.empty){

@@ -2,7 +2,7 @@
 
 package dspblocks
 
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.system.BaseConfig
 import org.scalatest.flatspec.AnyFlatSpec

@@ -5,7 +5,7 @@ import breeze.linalg.max
 import chisel3._
 import chisel3.internal.requireIsHardware
 import chisel3.util.{Cat, log2Ceil}
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy.{LazyModule, LazyModuleImp}
 
 class AXI4StreamWidthAdapter

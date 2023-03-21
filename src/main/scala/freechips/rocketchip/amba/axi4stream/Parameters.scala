@@ -2,7 +2,7 @@ package freechips.rocketchip.amba.axi4stream
 
 import chisel3.internal.sourceinfo.SourceInfo
 import chisel3.util.log2Ceil
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.util.AsyncQueueParams
 

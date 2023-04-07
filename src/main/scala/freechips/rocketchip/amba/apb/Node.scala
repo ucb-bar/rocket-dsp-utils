@@ -2,7 +2,7 @@
 
 package freechips.rocketchip.amba.apb
 
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 
 object APBBundleBridgeImp extends BundleBridgeImp[APBBundle]

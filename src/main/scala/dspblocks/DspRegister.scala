@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util.log2Ceil
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream.{AXI4StreamIdentityNode, AXI4StreamSlavePortParameters}
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.regmapper._
 import freechips.rocketchip.tilelink._

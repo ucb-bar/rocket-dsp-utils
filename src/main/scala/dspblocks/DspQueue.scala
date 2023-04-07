@@ -6,7 +6,7 @@ import freechips.rocketchip.amba.ahb._
 import freechips.rocketchip.amba.apb._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream.AXI4StreamIdentityNode
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy.LazyModuleImp
 import freechips.rocketchip.regmapper._
 import freechips.rocketchip.tilelink._

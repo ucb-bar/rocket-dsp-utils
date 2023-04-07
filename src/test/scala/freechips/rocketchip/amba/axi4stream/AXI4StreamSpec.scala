@@ -6,7 +6,7 @@ import chisel3.iotesters.PeekPokeTester
 import dsptools.tester.MemMasterModel
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.tilelink._
 import org.scalatest.flatspec.AnyFlatSpec

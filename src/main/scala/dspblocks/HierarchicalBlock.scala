@@ -4,7 +4,7 @@ package dspblocks
 
 import chisel3._
 import freechips.rocketchip.amba.axi4stream._
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy.{LazyModuleImp, NodeHandle}
 
 trait HierarchicalBlock[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B] {

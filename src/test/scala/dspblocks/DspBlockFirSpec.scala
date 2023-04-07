@@ -7,7 +7,7 @@ import chisel3.iotesters._
 import chisel3.util.Cat
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
-import freechips.rocketchip.config._
+import org.chipsalliance.cde.config._
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.regmapper._
 import org.scalatest.freespec.AnyFreeSpec

@@ -1,1 +1,1 @@
-//val config = chipsalliance.rocketchip.config
+//val config = org.chipsalliance.cde.config

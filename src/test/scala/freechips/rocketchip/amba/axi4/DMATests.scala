@@ -4,7 +4,7 @@ import chisel3.iotesters.PeekPokeTester
 import chisel3.stage.{ChiselGeneratorAnnotation, ChiselStage}
 import dspblocks.{AXI4DspBlock, AXI4StandaloneBlock, TLDspBlock, TLStandaloneBlock}
 import freechips.rocketchip.amba.axi4stream._
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy.{AddressSet, LazyModule, LazyModuleImp, LazyModuleImpLike, MixedNode, NodeHandle}
 import freechips.rocketchip.subsystem.{PeripheryBus, PeripheryBusParams}
 import freechips.rocketchip.system.BaseConfig

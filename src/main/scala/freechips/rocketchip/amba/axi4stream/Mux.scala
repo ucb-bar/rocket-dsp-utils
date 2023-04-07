@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util.log2Ceil
 import dspblocks.{DspBlock, HasCSR}
 import freechips.rocketchip.amba.axi4._
-import freechips.rocketchip.config.Parameters
+import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.regmapper.{RegField, RegFieldDesc}
 import freechips.rocketchip.tilelink._

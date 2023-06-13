@@ -4,13 +4,14 @@ package freechips.rocketchip.tilelink
 
 import chisel3.MultiIOModule
 import dsptools.tester.MemMasterModel
+import chisel3.util.log2Ceil
 
 object TLMasterModel {
   case class AChannel(
     opcode:  BigInt = 0, // PutFullData
     param:   BigInt = 0, // toT
-    size:    BigInt = 2,
-    source:  BigInt = 1,
+    size:    BigInt = 3,
+    source:  BigInt = 0,
     address: BigInt = 0,
     mask:    BigInt = 0xff,
     data:    BigInt = 0)
@@ -73,15 +74,19 @@ trait TLMasterModel extends chisel3.iotesters.PeekPokeTester[MultiIOModule] with
     poke(memTL.a.bits.data,    a.data)
   }
 
-  def tlWriteA(a: AChannel): Unit = {
+  def tlWriteA(a: AChannel): BigInt = {
     poke(memTL.a.valid, 1)
     pokeA(a)
-
-    while(peek(memTL.a.ready) != BigInt(0)) {
+    poke(memTL.d.ready, 1)
+    step(1)
+    
+    while(peek(memTL.d.valid) == BigInt(0)) {
       step(1)
     }
-    step(1)
+    val d = peek(memTL.d.bits.data)
     poke(memTL.a.valid, 0)
+    poke(memTL.d.ready, 0)
+    d
   }
 
   def peekB(): BChannel = {
@@ -187,15 +192,24 @@ trait TLMasterModel extends chisel3.iotesters.PeekPokeTester[MultiIOModule] with
     poke(memTL.e.valid, 0)
   }
 
-  def memWriteWord(addr: BigInt, data: BigInt): Unit = tlWriteWord(addr, data)
+  def memWriteWord(addr: BigInt, data: BigInt): Unit = {
+    tlWriteWord(addr, data)
+  }
   def tlWriteWord(addr: BigInt, data: BigInt): Unit = {
-    tlWriteA(AChannel(opcode = 0 /* PUT */, address=addr, data=data, mask = BigInt("1"*8, 2)))
-    tlReadD()
+    step(1)
+    val a = tlWriteA(AChannel(opcode = 0 /* PUT */, address=addr, data=data, mask = BigInt("1"*8, 2)))
+  }
+  
+  def memWriteWord(addr: BigInt, data: BigInt, beatBytes: Int): Unit = {
+    tlWriteWord(addr, data, beatBytes)
+  }
+  def tlWriteWord(addr: BigInt, data: BigInt, beatBytes: Int): Unit = {
+    step(1)
+    val a = tlWriteA(AChannel(opcode = 0 /* PUT */, address=addr, data=data, size = log2Ceil(beatBytes), mask = BigInt("1"*beatBytes, 2)))
   }
 
   def tlWriteByte(addr: BigInt, data: Int): Unit = {
-    tlWriteA(AChannel(opcode = 0 /* PUT */, address = addr, data=data, mask = BigInt("1"*8, 2)))
-    tlReadD()
+    val a = tlWriteA(AChannel(opcode = 0 /* PUT */, address = addr, data=data, mask = BigInt("1"*8, 2)))
   }
 
   def tlWriteBytes(addr: BigInt, data: Seq[Int]): Unit = {
@@ -206,9 +220,16 @@ trait TLMasterModel extends chisel3.iotesters.PeekPokeTester[MultiIOModule] with
 
   def memReadWord(addr: BigInt): BigInt = tlReadWord(addr)
   def tlReadWord(addr: BigInt): BigInt = {
-    tlWriteA(AChannel(opcode = 4 /* GET */, address=addr))
-    val d = tlReadD()
-    d.data
+    step(1)
+    val d = tlWriteA(AChannel(opcode = 4 /* GET */, address=addr))
+    d
+  }
+  
+  def memReadWord(addr: BigInt, beatBytes: Int): BigInt = tlReadWord(addr, beatBytes)
+  def tlReadWord(addr: BigInt, beatBytes: Int): BigInt = {
+    step(1)
+    val d = tlWriteA(AChannel(opcode = 4 /* GET */, address=addr, size = log2Ceil(beatBytes), mask = BigInt("1"*beatBytes, 2)))
+    d
   }
 
 }

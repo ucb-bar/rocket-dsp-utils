@@ -6,9 +6,6 @@ import chisel3.experimental.FixedPoint
 import chisel3.internal.firrtl.KnownBinaryPoint
 import dsptools._
 import dsptools.numbers._
-import freechips.rocketchip.amba.apb.APBMasterModel
-import freechips.rocketchip.amba.axi4.AXI4MasterModel
-import freechips.rocketchip.tilelink.TLMasterModel
 import spire.math.ConvertableFrom
 import spire.implicits._
 
@@ -19,65 +16,6 @@ trait MemTester {
   def writeAddr(addr: BigInt, value: BigInt): Unit
   def writeAddr(addr: Int, value: Int): Unit = writeAddr(BigInt(addr), BigInt(value))
 }
-
-trait TLMemTester extends TLMasterModel {
-  def resetMem(): Unit = {
-    tlReset()
-  }
-
-  def readAddr(addr: BigInt): BigInt = {
-    tlReadWord(addr)
-  }
-
-  def writeAddr(addr: BigInt, value: BigInt): Unit = {
-    tlWriteWord(addr, value)
-  }
-}
-
-trait APBMemTester extends APBMasterModel {
-  def resetMem(): Unit = {
-    apbReset()
-  }
-
-  def readAddr(addr: BigInt): BigInt = {
-    apbRead(addr)
-  }
-
-  def writeAddr(addr: BigInt, value: BigInt): Unit = {
-    apbWrite(addr, value)
-  }
-}
-
-trait AXI4MemTester extends AXI4MasterModel {
-  def resetMem(): Unit = {
-    axiReset()
-  }
-
-  def readAddr(addr: BigInt): BigInt = {
-    axiReadWord(addr)
-  }
-
-  def writeAddr(addr: BigInt, value: BigInt): Unit = {
-    axiWriteWord(addr, value)
-  }
-}
-
-/*
-trait AHBMemTester[T <: MultiIOModule] extends AHBMasterModel[T] {
-  def resetMem(): Unit = {
-    ahbReset()
-  }
-
-  def readAddr(addr: BigInt): BigInt = {
-    ahbReadWord(addr)
-  }
-
-  def writeAddr(addr: BigInt, value: BigInt): Unit = {
-    ahbWriteWord(addr, value)
-  }
-}
-*/
-
 
 object PeekPokePackers {
   def signedToUnsigned(in: BigInt, width: Int): BigInt = {
@@ -101,7 +39,7 @@ object PeekPokePackers {
   }
 
   def pack[T <: Data, V : ConvertableFrom](value: V, gen: T): BigInt = gen match {
-    case _:DspReal => DspTesterUtilities.doubleToBigIntBits(value.toDouble())
+    case _:DspReal => throw DspException("unsupported")
     case f:FixedPoint => f.binaryPoint match {
       case KnownBinaryPoint(bp) =>
         val bigIntValue = FixedPoint.toBigInt(value.toDouble(), bp)
@@ -129,7 +67,7 @@ object PeekPokePackers {
   }
 
   def unpackDouble[T <: Data](value: BigInt, gen: T): Double = gen match {
-    case _:DspReal => DspTesterUtilities.bigIntBitsToDouble(value)
+    case _:DspReal => throw DspException("unsupported")
     case f:FixedPoint => f.binaryPoint match {
       case KnownBinaryPoint(b) => FixedPoint.toDouble(unsignedToSigned(value, f.getWidth), b)
       case _ => throw DspException("Must poke FixedPoint with known binary point")

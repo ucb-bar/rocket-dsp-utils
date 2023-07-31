@@ -4,8 +4,8 @@ package jtag
 /*
 import cde._
 import chisel3.util.log2Ceil
-import chisel3.iotesters._
-import chisel3.iotesters.experimental._
+import chiseltest.iotesters._
+import chiseltest.iotesters.experimental._
 import craft._
 import diplomacy._
 import dspblocks._

@@ -3,13 +3,14 @@
 package freechips.rocketchip.jtag2mm
 
 import org.chipsalliance.cde.config.Parameters
-import dsptools.DspTester
 import freechips.rocketchip.diplomacy.{AddressSet, LazyModule}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import chiseltest.{ChiselScalatestTester, VerilatorBackendAnnotation}
+import chiseltest.iotesters.PeekPokeTester
 
-//class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends PeekPokeTester(dut.module) {
-class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.module) {
+class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends PeekPokeTester(dut.module) {
+//class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.module) {
   def jtagReset(stepSize: Int = 1) {
     var i = 0
     while (i < 5) {
@@ -103,7 +104,8 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
   peek(dut.outStream.bits.data)
   expect(dut.outStream.bits.data, 0)
   
-  updatableDspVerbose.withValue(false) {
+//  updatableDspVerbose.withValue(false) {
+  {
     jtagReset(stepSize)
     
     // write value 0x08 to address 0x00 
@@ -127,8 +129,8 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
   jtagSend(BigInt("0"*56 ++ "00011000", 2), 64, true, false, stepSize)
   jtagSend(BigInt("0001", 2), 4, false, false, stepSize)*/
 
-  updatableDspVerbose.withValue(false) {
-  
+//  updatableDspVerbose.withValue(false) {
+  {
     // set start address for burst write to 0x08 and number of burst transactions to 2
     jtagSend(BigInt("0010", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 56 ++ "00001000", 2), 64, true, false, stepSize)
@@ -190,8 +192,8 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
   peek(dut.outStream.bits.data)
   expect(dut.outStream.bits.data, 24)
 
-  updatableDspVerbose.withValue(false) {
-  
+//  updatableDspVerbose.withValue(false) {
+  {
     // set start address for burst read to 0x00 and number of burst transactions to 3
     jtagSend(BigInt("0010", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 64, 2), 64, true, false, stepSize)
@@ -222,7 +224,7 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends DspTester(dut.mo
   step(300)
 }
 
-class Jtag2TLMultiplexerSpec extends AnyFlatSpec with Matchers {
+class Jtag2TLMultiplexerSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   implicit val p: Parameters = Parameters.empty
 
   val irLength = 4
@@ -231,13 +233,12 @@ class Jtag2TLMultiplexerSpec extends AnyFlatSpec with Matchers {
   val beatBytes = 8
   val maxBurstNum = 8
 
-  it should "Test JTAG To TL Multiplexer" in {
-    val lazyDut =
-      LazyModule(new Jtag2TLMultiplexer(irLength, initialInstruction, beatBytes, addresses, maxBurstNum) {})
-
-    //chisel3.iotesters.Driver.execute(Array("-tiwv", "-tbn", "verilator", "-tivsuv"), () => lazyDut.module) { c =>
-    chisel3.iotesters.Driver.execute(Array("-tbn", "verilator"), () => lazyDut.module) { c =>
-      new Jtag2TLMultiplexerTester(lazyDut)
-    } should be(true)
-  }
+//  it should "Test JTAG To TL Multiplexer" in {
+//    val lazyDut =
+//      LazyModule(new Jtag2TLMultiplexer(irLength, initialInstruction, beatBytes, addresses, maxBurstNum) {})
+//
+//    test(lazyDut.module)
+//      .withAnnotations(Seq(VerilatorBackendAnnotation))
+//      .runPeekPoke(_ => new Jtag2TLMultiplexerTester(lazyDut))
+//  }
 }

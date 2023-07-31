@@ -8,7 +8,7 @@ import freechips.rocketchip.amba.apb._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.tilelink.{BundleBridgeToTL, _}
+import freechips.rocketchip.tilelink._
 
 /**
   * Base trait for basic unit of computation
@@ -114,7 +114,7 @@ trait TLStandaloneBlock extends StandaloneBlock[
   val ioMem = mem.map { m => {
     val ioMemNode = BundleBridgeSource(() => TLBundle(standaloneParams))
     m :=
-      BundleBridgeToTL(TLClientPortParameters(Seq(TLClientParameters("bundleBridgeToTL")))) :=
+      BundleBridgeToTL(TLMasterPortParameters.v1(Seq(TLMasterParameters.v1("bundleBridgeToTL")))) :=
       ioMemNode
     val ioMem = InModuleBody { ioMemNode.makeIO() }
     ioMem

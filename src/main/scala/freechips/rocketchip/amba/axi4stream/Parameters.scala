@@ -1,6 +1,6 @@
 package freechips.rocketchip.amba.axi4stream
 
-import chisel3.internal.sourceinfo.SourceInfo
+import chisel3.experimental.SourceInfo
 import chisel3.util.log2Ceil
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
@@ -151,7 +151,7 @@ case class AXI4StreamBundleParameters(
     * @param x parameters to be merged with
     * @return
     */
-  def union(x: AXI4StreamBundleParameters) =
+  def union(x: AXI4StreamBundleParameters): AXI4StreamBundleParameters =
     AXI4StreamBundleParameters(
       max(n, x.n),
       max(i, x.i),
@@ -167,7 +167,7 @@ object AXI4StreamBundleParameters
   /**
     * Parameters for bundle with no fields
     */
-  val emptyBundleParameters = AXI4StreamBundleParameters(
+  val emptyBundleParameters: AXI4StreamBundleParameters = AXI4StreamBundleParameters(
     n = 0, i = 0, d = 0, u =0,
     hasData = false, hasStrb = false, hasKeep = false)
 
@@ -221,7 +221,7 @@ case class AXI4StreamAsyncEdgeParameters
   params: Parameters,
   sourceInfo: SourceInfo
 ) {
-  val bundle =
+  val bundle: AXI4StreamAsyncBundleParameters =
     AXI4StreamAsyncBundleParameters(slave.async, AXI4StreamBundleParameters.joinEdge(master.base, slave.base))
 }
 

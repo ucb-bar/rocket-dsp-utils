@@ -17,7 +17,7 @@ case class TLToBundleBridgeNode(managerParams: TLManagerPortParameters)(implicit
 
 object TLToBundleBridgeNode {
   def apply(managerParams: TLManagerParameters, beatBytes: Int)(implicit  valName: ValName): TLToBundleBridgeNode =
-    new TLToBundleBridgeNode(TLManagerPortParameters(Seq(managerParams), beatBytes))
+    new TLToBundleBridgeNode(TLSlavePortParameters.v1(Seq(managerParams), beatBytes))
 }
 
 class TLToBundleBridge(managerParams: TLManagerPortParameters)(implicit p: Parameters) extends LazyModule {
@@ -35,7 +35,7 @@ object TLToBundleBridge {
     converter.node
   }
   def apply(managerParams: TLManagerParameters, beatBytes: Int)(implicit p: Parameters): TLToBundleBridgeNode = {
-    apply(TLManagerPortParameters(Seq(managerParams), beatBytes))
+    apply(TLSlavePortParameters.v1(Seq(managerParams), beatBytes))
   }
 }
 
@@ -49,7 +49,7 @@ case class BundleBridgeToTLNode(clientParams: TLClientPortParameters)(implicit v
 
 object BundleBridgeToTLNode {
   def apply(clientParams: TLClientParameters, beatBytes: Int)(implicit valName: ValName): BundleBridgeToTLNode = {
-    BundleBridgeToTLNode(TLClientPortParameters(Seq(clientParams), beatBytes))
+    BundleBridgeToTLNode(TLMasterPortParameters.v1(Seq(clientParams), beatBytes))
   }
 }
 
@@ -68,6 +68,6 @@ object BundleBridgeToTL {
     converter.node
   }
   def apply(clientParams: TLClientParameters, beatBytes: Int)(implicit p: Parameters): BundleBridgeToTLNode = {
-    apply(TLClientPortParameters(Seq(clientParams), beatBytes))
+    apply(TLMasterPortParameters.v1(Seq(clientParams), beatBytes))
   }
 }

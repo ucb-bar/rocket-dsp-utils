@@ -35,7 +35,7 @@ trait DspQueueImp [D, U, EO, EI, B <: Data] extends LazyModuleImp with HasRegMap
   streamOut <> queuedStream
 
   val queueEntries = RegInit(UInt(log2Ceil(depth + 1).W), 0.U)
-  queueEntries := queueEntries + streamIn.fire() - streamOut.fire()
+  queueEntries := queueEntries + streamIn.fire - streamOut.fire
 
   val queueThreshold = WireInit(UInt(64.W), depth.U)
   val queueFilling = queueEntries >= queueThreshold

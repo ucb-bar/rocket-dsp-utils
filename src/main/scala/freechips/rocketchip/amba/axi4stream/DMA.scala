@@ -93,11 +93,11 @@ class DMASimplifier(val addrWidth: Int, val complexLenWidth: Int, val simpleLenW
   io.out.bits.fixedAddress := io.in.bits.fixedAddress
 
   io.in.ready := last && io.out.ready
-  when (io.out.fire()) {
+  when (io.out.fire) {
     lengthCnt := Mux(lastBeat, 0.U, lengthCnt + 1.U)
     cycleCnt := Mux(lastBeat, cycleCnt + 1.U, cycleCnt)
   }
-  when (io.in.fire()) {
+  when (io.in.fire) {
     lengthCnt := 0.U
     cycleCnt := 0.U
   }
@@ -215,7 +215,7 @@ class StreamingAXI4DMA
     axi.ar.valid := !reading && enable && memToStreamSimple.io.out.valid
     memToStreamSimple.io.out.ready := !reading && enable && axi.ar.ready
 
-    when (memToStreamSimple.io.out.fire()) {
+    when (memToStreamSimple.io.out.fire) {
       reading := true.B
       readDescriptor := memToStreamSimple.io.out.bits
       readBeatCounter := 0.U
@@ -224,7 +224,7 @@ class StreamingAXI4DMA
 
     axi.aw.valid := !writing && enable && streamToMemSimple.io.out.valid
     streamToMemSimple.io.out.ready := !writing && enable && axi.aw.ready
-    when (streamToMemSimple.io.out.fire()) {
+    when (streamToMemSimple.io.out.fire) {
       writing := true.B
       writeDescriptor := streamToMemSimple.io.out.bits
       writeBeatCounter := 0.U
@@ -254,7 +254,7 @@ class StreamingAXI4DMA
     axi.ar.bits.prot := arprot
     axi.ar.bits.size := log2Ceil((dataWidth + 7) / 8).U
 
-    when (axi.r.fire()) {
+    when (axi.r.fire) {
       readBeatCounter := readBeatCounter + 1.U
       // todo: readDescriptor isn't correct for a single-beat single-cycle transaction (are they possible?)
       when (axi.r.bits.last || readBeatCounter >= readDescriptor.length) {
@@ -268,7 +268,7 @@ class StreamingAXI4DMA
     writeBuffer.io.enq <> in
     axi.w.bits.data := writeBuffer.io.deq.bits.data
     axi.w.bits.strb := writeBuffer.io.deq.bits.makeStrb
-    axi.w.bits.last := Mux(axi.aw.fire(), // check if single beat
+    axi.w.bits.last := Mux(axi.aw.fire, // check if single beat
       axi.aw.bits.len === 0.U, // if single beat, writeBeatCounter and writeDescriptor won't be set
       writeBeatCounter >= writeDescriptor.length
     )
@@ -284,7 +284,7 @@ class StreamingAXI4DMA
     axi.aw.bits.prot := awprot
     axi.aw.bits.size := log2Ceil((dataWidth + 7) / 8).U
 
-    when (axi.w.fire()) {
+    when (axi.w.fire) {
       writeBeatCounter := writeBeatCounter + 1.U
       when (axi.w.bits.last) {
         writing := false.B
@@ -294,7 +294,7 @@ class StreamingAXI4DMA
 
     axi.b.ready := true.B // should probably monitor responses!
 
-    when (axi.b.fire()) {
+    when (axi.b.fire) {
       writeError := axi.b.bits.resp =/= AXI4Parameters.RESP_OKAY
     }
 

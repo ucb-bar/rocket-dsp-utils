@@ -3,14 +3,13 @@
 package freechips.rocketchip.jtag2mm
 
 import chisel3._
-import chisel3.experimental.{IO}
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import dspblocks._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.regmapper.RegField
-import freechips.rocketchip.tilelink.{BundleBridgeToTL, _}
+import freechips.rocketchip.tilelink._
 
 
 abstract class TestMultiplexer[D, U, EO, EI, B <: Data]()(implicit p: Parameters)
@@ -59,7 +58,7 @@ class Jtag2TLMultiplexer(
     )
 
     //TODO: CHIPYARD
-    val clientParams = TLClientParameters(
+    val clientParams = TLMasterParameters.v1(
       name = "BundleBridgeToTL",
       sourceId = IdRange(0, 1),
       nodePath = Seq(),
@@ -77,7 +76,7 @@ class Jtag2TLMultiplexer(
     val ioMem = mem.map { m =>
       {
         val ioMemNode = BundleBridgeSource(() => TLBundle(standaloneParams))
-        m := BundleBridgeToTL(TLClientPortParameters(Seq(clientParams))) := ioMemNode
+        m := BundleBridgeToTL(TLMasterPortParameters.v1(Seq(clientParams))) := ioMemNode
         val ioMem = InModuleBody { ioMemNode.makeIO() }
         ioMem
       }

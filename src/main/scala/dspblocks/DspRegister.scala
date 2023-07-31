@@ -83,7 +83,7 @@ trait DspRegisterImp[D, U, EO, EI, B <: Data] extends LazyModuleImp with HasRegM
   streamOut.bits.last := loadIdx === (veclen - 1.U)
   streamOut.valid     := loading && loadOK
 
-  when (loading && streamOut.fire()) {
+  when (loading && streamOut.fire) {
     val next = loadIdx +& 1.U
     readIdx := next
     when (next === veclen) {
@@ -98,7 +98,7 @@ trait DspRegisterImp[D, U, EO, EI, B <: Data] extends LazyModuleImp with HasRegM
 
   streamIn.ready := storing && storeOK //loading && loadOK
 
-  when (storing && streamIn.fire()) {
+  when (storing && streamIn.fire) {
     when (writeIdx === 0.U) {
       user := streamIn.bits.user
     }

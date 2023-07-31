@@ -4,11 +4,10 @@ package freechips.rocketchip.jtag2mm
 
 import chisel3._
 import chisel3.util._
-import chisel3.experimental.{ChiselEnum, IO}
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.tilelink.{TLToBundleBridge, _}
+import freechips.rocketchip.tilelink._
 
 
 class JtagToMasterControllerIO(irLength: Int, beatBytes: Int) extends JtagBlockIO(irLength) {
@@ -130,7 +129,7 @@ class JTAGToMasterTL[D, U, E, O, B <: Data](irLength: Int, initialInstruction: B
 
   val node = Some(
     TLClientNode(
-      Seq(TLClientPortParameters(Seq(TLClientParameters(name = "JTAGToMasterOut", sourceId = IdRange(0, 4)))))
+      Seq(TLMasterPortParameters.v1(Seq(TLMasterParameters.v1(name = "JTAGToMasterOut", sourceId = IdRange(0, 4)))))
     )
   )
 
@@ -465,7 +464,7 @@ class TLJTAGToMasterBlock(
     io2
   }
 
-  val managerParams = TLManagerParameters(
+  val managerParams = TLSlaveParameters.v1(
     address = Seq(addresses),
     resources = device.reg,
     regionType = RegionType.UNCACHED,

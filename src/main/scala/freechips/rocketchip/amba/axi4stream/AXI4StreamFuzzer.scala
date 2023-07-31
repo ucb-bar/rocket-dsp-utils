@@ -60,8 +60,8 @@ class AXI4StreamFuzzer(
     val idVec   = VecInit(id)
     val destVec = VecInit(dest)
 
-    val interPacketGo = out.fire() && out.bits.last
-    val intraPacketGo = out.fire() && !out.bits.last
+    val interPacketGo = out.fire && out.bits.last
+    val intraPacketGo = out.fire && !out.bits.last
 
     val interPacketCounter = RegInit(UInt(log2Ceil(interPacketGap).W), 1.U)
     val intraPacketCounter = RegInit(UInt(log2Ceil(intraPacketGap).W), 1.U)
@@ -87,7 +87,7 @@ class AXI4StreamFuzzer(
 
     out.valid := interPacketDone && intraPacketDone
 
-    val (transactionCounter, transactionCounterDone) = Counter(out.fire(), nTransactions)
+    val (transactionCounter, transactionCounterDone) = Counter(out.fire, nTransactions)
 
     val finished = RegInit(false.B)
     finished := finished || transactionCounterDone

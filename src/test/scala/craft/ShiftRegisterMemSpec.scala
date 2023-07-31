@@ -3,9 +3,10 @@
 package craft
 
 import chisel3._
-import dsptools.DspTester
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import chiseltest.ChiselScalatestTester
+import chiseltest.iotesters.PeekPokeTester
 
 class SRMemModule( dut: (UInt, Bool) => UInt ) extends Module {
   val io = IO(new Bundle {
@@ -19,7 +20,7 @@ class SRMemModule( dut: (UInt, Bool) => UInt ) extends Module {
 
 // expected_output < 0 means don't care
 class SRMemTester( dut: SRMemModule, input: Seq[(Int, Boolean)], expected_output: Seq[Int], verbose: Boolean = true)
-  extends DspTester(dut) {
+  extends PeekPokeTester(dut) {
   input.zip(expected_output).foreach({case ((num, valid), expected) =>
     poke(dut.io.in, num)
     poke(dut.io.en, valid)
@@ -31,7 +32,7 @@ class SRMemTester( dut: SRMemModule, input: Seq[(Int, Boolean)], expected_output
 }
 
 //noinspection RedundantDefaultArgument,RedundantDefaultArgument,RedundantDefaultArgument,RedundantDefaultArgument
-class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
+class ShiftRegisterMemSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   behavior of "ShiftRegisterMem"
 
   val testVector: Seq[(Int, Boolean)] = Seq(
@@ -52,11 +53,11 @@ class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
 
   val X = -1
 
-  def runTest (dut : (UInt, Bool) => UInt, expected: Seq[Int]) =
-    chisel3.iotesters.Driver.execute(Array(
-      "--backend-name", "treadle"), () => new SRMemModule(dut)) {
+  def runTest (dut : (UInt, Bool) => UInt, expected: Seq[Int]): Unit = {
+    test(new SRMemModule(dut)).runPeekPoke{
       c => new SRMemTester(c, testVector, expected)
-    } should be (true)
+    }
+  }
 
   it should "work with single-ported memories, an enable, and an even shift" in {
     def testMem(in: UInt, en: Bool): UInt = ShiftRegisterMem(in, 6, en, use_sp_mem = true)

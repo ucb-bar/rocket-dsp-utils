@@ -92,16 +92,26 @@ case object ByteRotateAmount extends CSRField {
   override val name = "byteRotationAmount"
 }
 
+trait BRModuleImp {
+  val in: Seq[AXI4StreamBundle]
+  val out: Seq[AXI4StreamBundle]
+  val n: Int
+  val nWidth: Int
+  val byteRotate: UInt
+
+  def rotateBytes(u: UInt, n: Int, rot: Int): UInt
+}
+
 abstract class ByteRotate[D, U, EO, EI, B <: Data]()(implicit p: Parameters) extends DspBlock[D, U, EO, EI, B] with HasCSR {
   val streamNode = AXI4StreamIdentityNode()
 
-  lazy val module = new LazyModuleImp(this) {
-    val (in, _)  = streamNode.in.unzip
-    val (out, _) = streamNode.out.unzip
-    val n = in.head.bits.params.n
-    val nWidth = log2Ceil(n) + 1
+  lazy val module = new LazyModuleImp(this) with BRModuleImp {
+    override val (in, _)  = streamNode.in.unzip
+    override val (out, _) = streamNode.out.unzip
+    override val n = in.head.bits.params.n
+    override val nWidth = log2Ceil(n) + 1
 
-    val byteRotate = RegInit(0.U(nWidth.W))
+    override val byteRotate = RegInit(0.U(nWidth.W))
 
     def rotateBytes(u: UInt, n: Int, rot: Int): UInt = {
       Cat(u(8*rot-1, 0), u(8*n-1, 8*rot))

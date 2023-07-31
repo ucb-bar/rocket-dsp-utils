@@ -1,14 +1,24 @@
 package dspblocks
 
 import breeze.stats.distributions.Uniform
-import chisel3.iotesters.PeekPokeTester
+import chiseltest.iotesters.PeekPokeTester
 import chisel3.{Bundle, Flipped, Module}
+import chiseltest.ChiselScalatestTester
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+
+trait DRTMModuleImp {
+  val sinkBundle: AXI4StreamBundle
+  val edge: AXI4StreamEdgeParameters
+  val memBundle: AXI4Bundle
+  val memEdge: AXI4EdgeParameters
+  val out: AXI4StreamBundle
+  val mem: AXI4Bundle
+}
 
 class DspRegisterTestModule(
                   val inP: AXI4StreamBundleParameters,
@@ -35,12 +45,12 @@ class DspRegisterTestModule(
     // memMaster      := reg.mem.get
     reg.mem.get    := memMaster
 
-    lazy val module = new LazyModuleImp(this) {
-      val (sinkBundle, edge) = outNode.in.head
-      val (memBundle, memEdge) = memMaster.out.head
+    lazy val module = new LazyModuleImp(this) with DRTMModuleImp {
+      override val (sinkBundle, edge) = outNode.in.head
+      override val (memBundle, memEdge) = memMaster.out.head
 
-      val out = IO(AXI4StreamBundle(sinkBundle.params))
-      val mem = IO(Flipped(AXI4Bundle(memBundle.params)))
+      override val out = IO(AXI4StreamBundle(sinkBundle.params))
+      override val mem = IO(Flipped(AXI4Bundle(memBundle.params)))
 
       out <> sinkBundle
       memBundle <> mem
@@ -62,7 +72,7 @@ class DspRegisterTestModuleTester(c: DspRegisterTestModule,
                                   expectTranslator: Seq[AXI4StreamTransaction] => Seq[AXI4StreamTransactionExpect] =
                        { _.map(t => AXI4StreamTransactionExpect(data = Some(t.data))) }
                       )
-  extends PeekPokeTester(c) with AXI4StreamSlaveModel with AXI4MasterModel {
+  extends PeekPokeTester(c) with AXI4StreamSlaveModel[DspRegisterTestModule] with AXI4MasterModel {
 
   override val memAXI: AXI4Bundle = c.io.mem
   axiReset()
@@ -75,7 +85,7 @@ class DspRegisterTestModuleTester(c: DspRegisterTestModule,
   println(s"${axiReadWord(0)} is the veclen")
 }
 
-class DspRegisterSpec extends AnyFlatSpec with Matchers {
+class DspRegisterSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   behavior of "AXI4DspRegister"
 
   it should "be able to read and write" ignore {
@@ -83,8 +93,8 @@ class DspRegisterSpec extends AnyFlatSpec with Matchers {
     val outP = AXI4StreamSlaveParameters()
     val transactions = AXI4StreamTransaction.defaultSeq(64).zipWithIndex.map({case (t, i) => t.copy(data = i) })
 
-    chisel3.iotesters.Driver(() => new DspRegisterTestModule(inP, outP, 64, transactions) /*, backendType = "verilator"*/) {
-      c => new DspRegisterTestModuleTester(c) {
+    test(new DspRegisterTestModule(inP, outP, 64, transactions))
+      .runPeekPoke(new DspRegisterTestModuleTester(_) {
         axiWriteWord(0, 64)
         axiWriteWord(0x10, 15)
         axiWriteWord(0x8, 0xFF00)
@@ -95,8 +105,7 @@ class DspRegisterSpec extends AnyFlatSpec with Matchers {
         for (i <- 0 until 64) {
           require(axiReadWord(24 + i * 8) == BigInt(i), s"Addr $i is wrong")
         }
-      }
-    } should be (true)
+      })
   }
 
   it should "work with streams narrower than memory width" in {

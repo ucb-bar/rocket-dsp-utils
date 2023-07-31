@@ -2,11 +2,13 @@
 
 package freechips.rocketchip.jtag2mm
 
-import dsptools.DspTester
+import chiseltest.iotesters.PeekPokeTester
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import chiseltest.{ChiselScalatestTester, VerilatorBackendAnnotation}
+import chiseltest.iotesters.PeekPokeTester
 
-class JtagFuzzerTester(dut: JtagFuzzer) extends DspTester(dut) {
+class JtagFuzzerTester(dut: JtagFuzzer) extends PeekPokeTester(dut) {
 
   step(10)
   step(5)
@@ -14,9 +16,9 @@ class JtagFuzzerTester(dut: JtagFuzzer) extends DspTester(dut) {
 }
 
 
-class JtagFuzzerSpec extends AnyFlatSpec with Matchers {
+class JtagFuzzerSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
-  def dut(irLength: Int, beatBytes: Int, numOfTransfers: Int): () => JtagFuzzer = () => {
+  def dut(irLength: Int, beatBytes: Int, numOfTransfers: Int): JtagFuzzer = {
     new JtagFuzzer(irLength, beatBytes, numOfTransfers)
   }
 
@@ -26,9 +28,8 @@ class JtagFuzzerSpec extends AnyFlatSpec with Matchers {
   
   it should "Test JTAG Fuzzer" in {
 
-    //chisel3.iotesters.Driver.execute(Array("-tiwv", "-tbn", "verilator", "-tivsuv"), () => dut) { c =>
-    chisel3.iotesters.Driver.execute(Array("-tbn", "verilator"), dut(irLength, beatBytes, numOfTransfers)) { c =>
-      new JtagFuzzerTester(c)
-    } should be(true)
+    test(dut(irLength, beatBytes, numOfTransfers))
+      .withAnnotations(Seq(VerilatorBackendAnnotation))
+      .runPeekPoke(new JtagFuzzerTester(_))
   }
 }

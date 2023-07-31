@@ -3,13 +3,13 @@
 package dspblocks
 
 import chisel3._
-import chisel3.iotesters.PeekPokeTester
+import chiseltest.iotesters.PeekPokeTester
 import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.diplomacy.LazyModuleImp
 import freechips.rocketchip.tilelink.TLBundle
 
 abstract class PassthroughTester[D, U, EO, EI, B <: Data](dut: Passthrough[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B])
-extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel {
+extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel[LazyModuleImp] {
   resetMem()
 
   val in = dut.in.getWrappedValue
@@ -56,7 +56,7 @@ class TLPassthroughTester(c: TLPassthrough with TLStandaloneBlock)
 }
 
 abstract class ByteRotateTester[D, U, EO, EI, B <: Data] (dut: ByteRotate[D, U, EO, EI, B] with
-  StandaloneBlock[D, U, EO, EI, B]) extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel {
+  StandaloneBlock[D, U, EO, EI, B]) extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel[LazyModuleImp with BRModuleImp] {
   val in  = dut.in.getWrappedValue
   val out = dut.out.getWrappedValue
   val n = in.bits.params.n
@@ -103,7 +103,7 @@ abstract class PTBRTester[D, U, EO, EI, B <: Data]
   dut: Chain[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B],
   depthAddr: BigInt,
   rotAddr: BigInt
-) extends PeekPokeTester(dut.module.asInstanceOf[LazyModuleImp]) with MemTester with AXI4StreamModel {
+) extends PeekPokeTester(dut.module.asInstanceOf[LazyModuleImp]) with MemTester with AXI4StreamModel[LazyModuleImp] {
   resetMem()
 
   val in = dut.in.getWrappedValue

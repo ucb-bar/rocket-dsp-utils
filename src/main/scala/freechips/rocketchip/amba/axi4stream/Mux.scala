@@ -9,6 +9,12 @@ import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.regmapper.{RegField, RegFieldDesc}
 import freechips.rocketchip.tilelink._
 
+trait SMModuleImp {
+  val ins, outs: Seq[AXI4StreamBundle]
+  val selBits: Int
+  val sels: Vec[UInt]
+}
+
 abstract class StreamMux[D, U, EO, EI, B <: Data](val beatBytes: Int) extends LazyModule()(Parameters.empty)
   with DspBlock[D, U, EO, EI, B] with HasCSR {
   val streamNode = AXI4StreamNexusNode(
@@ -19,17 +25,17 @@ abstract class StreamMux[D, U, EO, EI, B <: Data](val beatBytes: Int) extends La
     }
   )
 
-  lazy val module = new LazyModuleImp(this) {
-    val (ins, _) = streamNode.in.unzip
-    val (outs, _) = streamNode.out.unzip
+  lazy val module = new LazyModuleImp(this) with SMModuleImp {
+    override val (ins, _) = streamNode.in.unzip
+    override val (outs, _) = streamNode.out.unzip
 
-    val selBits = log2Ceil(ins.length + 1)
+    override val selBits = log2Ceil(ins.length + 1)
     // priority is given to the earlier entry, i.e. if sels(0) and sels(1) point to the same thing then out(0) will be
     // connected to the selected input and out(1) will be blocked
     // if sels(i) = ins.length, then it is disconnected from inputs (valid -> false)
     // all sels are initialized to be disconnected
     println(s"outs.length = ${outs.length}")
-    val sels = RegInit(VecInit(Seq.fill(outs.length)(ins.length.U(selBits.W))))
+    override val sels = RegInit(VecInit(Seq.fill(outs.length)(ins.length.U(selBits.W))))
 
     for (in <- ins) {
       in.ready := false.B // unless overridden by a selection below, input should not accept transactions

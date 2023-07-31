@@ -60,7 +60,7 @@ object CSRField {
   * Mixin for adding CSRs to
   */
 trait HasCSR {
-  def regmap(mapping: RegField.Map*)
+  def regmap(mapping: RegField.Map*): Unit
 
   def addCSR(address: Int, field: Seq[RegField]): Unit = {
 

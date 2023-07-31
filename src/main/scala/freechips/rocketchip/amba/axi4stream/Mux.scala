@@ -11,15 +11,17 @@ import freechips.rocketchip.tilelink._
 
 trait SMModuleImp {
   val ins, outs: Seq[AXI4StreamBundle]
-  val selBits: Int
-  val sels: Vec[UInt]
+  val selBits:   Int
+  val sels:      Vec[UInt]
 }
 
-abstract class StreamMux[D, U, EO, EI, B <: Data](val beatBytes: Int) extends LazyModule()(Parameters.empty)
-  with DspBlock[D, U, EO, EI, B] with HasCSR {
+abstract class StreamMux[D, U, EO, EI, B <: Data](val beatBytes: Int)
+    extends LazyModule()(Parameters.empty)
+    with DspBlock[D, U, EO, EI, B]
+    with HasCSR {
   val streamNode = AXI4StreamNexusNode(
-    masterFn = (ms: Seq[AXI4StreamMasterPortParameters]) =>
-      AXI4StreamMasterPortParameters(ms.map(_.masters).reduce(_ ++ _)),
+    masterFn =
+      (ms: Seq[AXI4StreamMasterPortParameters]) => AXI4StreamMasterPortParameters(ms.map(_.masters).reduce(_ ++ _)),
     slaveFn = ss => {
       AXI4StreamSlavePortParameters(ss.map(_.slaves).reduce(_ ++ _))
     }
@@ -48,7 +50,7 @@ abstract class StreamMux[D, U, EO, EI, B <: Data](val beatBytes: Int) extends La
       out.valid := false.B
       out.bits := DontCare
       for ((in, inIdx) <- ins.zipWithIndex) {
-        when (selCorrected === inIdx.U) {
+        when(selCorrected === inIdx.U) {
           out.bits := in.bits
           out.valid := in.valid
           in.ready := out.ready
@@ -58,17 +60,20 @@ abstract class StreamMux[D, U, EO, EI, B <: Data](val beatBytes: Int) extends La
 
     regmap(
       (for ((s, sIdx) <- sels.zipWithIndex) yield {
-        sIdx * beatBytes -> Seq(RegField(selBits, s,
-          RegFieldDesc(s"streamSel$sIdx", "select for stream mux")
-        ))
+        sIdx * beatBytes -> Seq(RegField(selBits, s, RegFieldDesc(s"streamSel$sIdx", "select for stream mux")))
       }): _*
     )
   }
 }
 
 class AXI4StreamMux(val address: AddressSet, beatBytes: Int)
-extends StreamMux[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters, AXI4Bundle](beatBytes = beatBytes)
-{
+    extends StreamMux[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ](beatBytes = beatBytes) {
   val registerNode = AXI4RegisterNode(address, beatBytes = beatBytes)
   val mem = Some(registerNode)
 
@@ -76,7 +81,9 @@ extends StreamMux[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgePar
 }
 
 class TLStreamMux(val address: AddressSet, beatBytes: Int)
-extends StreamMux[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle](beatBytes = beatBytes) {
+    extends StreamMux[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle](
+      beatBytes = beatBytes
+    ) {
   val device = new SimpleDevice("streamMux", devcompat = Seq("bwrc,streamMux"))
   val registerNode = TLRegisterNode(Seq(address), device = device, beatBytes = beatBytes)
   val mem = Some(registerNode)
@@ -85,8 +92,9 @@ extends StreamMux[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TL
 }
 
 object StreamMux {
-  def axi(address: AddressSet, beatBytes: Int = 4)(implicit valName: ValName): (AXI4StreamNexusNode, AXI4RegisterNode) =
-  {
+  def axi(address: AddressSet, beatBytes: Int = 4)(implicit
+    valName:       ValName
+  ): (AXI4StreamNexusNode, AXI4RegisterNode) = {
     val mux = LazyModule(new AXI4StreamMux(address = address, beatBytes = beatBytes))
     (mux.streamNode, mux.registerNode)
   }

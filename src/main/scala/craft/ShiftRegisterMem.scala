@@ -8,8 +8,7 @@ import chisel3.util._
 
 object ShiftRegisterMem {
 
-  def apply[T <: Data](in: T, n: Int, en: Bool = true.B, use_sp_mem: Boolean = false, name: String = null): T =
-  {
+  def apply[T <: Data](in: T, n: Int, en: Bool = true.B, use_sp_mem: Boolean = false, name: String = null): T = {
     requireIsHardware(in)
     if (n == 0) {
       in

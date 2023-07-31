@@ -8,8 +8,8 @@ Some operations do not have synthesizeable equivalents- these are useful for mod
 * Subtract
 * Multiply
 * Divide (Chisel only deals with division by powers of 2)
-* >
-* >=
+* \>
+* \>=
 * <
 * <=
 * ==

@@ -24,11 +24,11 @@ class Jtag2AXI4MultiplexerTester(dut: Jtag2AXI4Multiplexer) extends PeekPokeTest
   }
 
   def jtagSend(
-    data:                BigInt,
-    dataLength:          Int,
+    data:               BigInt,
+    dataLength:         Int,
     dataNotInstruction: Boolean = true,
-    stateResetNotIdle: Boolean = true,
-    stepSize:            Int = 1
+    stateResetNotIdle:  Boolean = true,
+    stepSize:           Int = 1
   ) {
 
     if (stateResetNotIdle) {
@@ -103,7 +103,7 @@ class Jtag2AXI4MultiplexerTester(dut: Jtag2AXI4Multiplexer) extends PeekPokeTest
   step(1)
   peek(dut.outStream.bits.data)
   expect(dut.outStream.bits.data, 0)
-  
+
 //  updatableDspVerbose.withValue(false) {
   {
     jtagReset(stepSize)
@@ -115,7 +115,7 @@ class Jtag2AXI4MultiplexerTester(dut: Jtag2AXI4Multiplexer) extends PeekPokeTest
     jtagSend(BigInt("0" * 56 ++ "00001000", 2), 64, true, false, stepSize)
     jtagSend(BigInt("0001", 2), 4, false, false, stepSize)
   }
-    
+
   step(100)
   peek(dut.outStream.bits.data)
   expect(dut.outStream.bits.data, 8)

@@ -88,11 +88,13 @@ abstract class FIRBlock[D, U, EO, EI, B <: Data](val nFilters: Int, val nTaps: I
 
 // make AXI4 flavor of FIRBlock
 abstract class AXI4FIRBlock(nFilters: Int, nTaps: Int)(implicit p: Parameters)
-    extends FIRBlock[AXI4MasterPortParameters,
-                     AXI4SlavePortParameters,
-                     AXI4EdgeParameters,
-                     AXI4EdgeParameters,
-                     AXI4Bundle](nFilters, nTaps)
+    extends FIRBlock[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ](nFilters, nTaps)
     with AXI4DspBlock
     with AXI4HasCSR {
   override val mem = Some(

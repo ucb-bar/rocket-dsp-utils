@@ -15,7 +15,6 @@ class JtagFuzzerTester(dut: JtagFuzzer) extends PeekPokeTester(dut) {
   step(2500)
 }
 
-
 class JtagFuzzerSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
   def dut(irLength: Int, beatBytes: Int, numOfTransfers: Int): JtagFuzzer = {
@@ -25,7 +24,7 @@ class JtagFuzzerSpec extends AnyFlatSpec with ChiselScalatestTester with Matcher
   val beatBytes = 4
   val irLength = 4
   val numOfTransfers = 10
-  
+
   it should "Test JTAG Fuzzer" in {
 
     test(dut(irLength, beatBytes, numOfTransfers))

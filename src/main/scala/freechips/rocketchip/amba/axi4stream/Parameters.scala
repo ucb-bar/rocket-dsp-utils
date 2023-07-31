@@ -20,14 +20,14 @@ import scala.math.max
   *                          id/dest pairs that can be in flight at once
   */
 case class AXI4StreamSlaveParameters(
-  numEndpoints: Int = 1,
-  hasData: Boolean = true,
-  hasStrb: Boolean = false,
-  hasKeep: Boolean = false,
-  nodePath: Seq[BaseNode] = Seq(),
-  alwaysReady: Boolean = false,
-  interleavedIdDest: Option[Int] = None)
-{
+  numEndpoints:      Int = 1,
+  hasData:           Boolean = true,
+  hasStrb:           Boolean = false,
+  hasKeep:           Boolean = false,
+  nodePath:          Seq[BaseNode] = Seq(),
+  alwaysReady:       Boolean = false,
+  interleavedIdDest: Option[Int] = None
+) {
   require(numEndpoints >= 1)
   interleavedIdDest.foreach { x => require(x >= 0) }
 
@@ -37,7 +37,7 @@ case class AXI4StreamSlaveParameters(
     * @param in parameters for another slave
     * @return
     */
-  def union(in: AXI4StreamSlaveParameters):AXI4StreamSlaveParameters =
+  def union(in: AXI4StreamSlaveParameters): AXI4StreamSlaveParameters =
     AXI4StreamSlaveParameters(
       numEndpoints + in.numEndpoints,
       hasData || in.hasData,
@@ -47,19 +47,17 @@ case class AXI4StreamSlaveParameters(
       nodePath ++ in.nodePath,
       alwaysReady && in.alwaysReady,
       (interleavedIdDest, in.interleavedIdDest) match {
-        case (Some(mine), Some(theirs)) => Some(mine min theirs)
+        case (Some(mine), Some(theirs)) => Some(mine.min(theirs))
         case (Some(mine), _)            => Some(mine)
-        case (_         , Some(theirs)) => Some(theirs)
+        case (_, Some(theirs))          => Some(theirs)
         case _                          => None
       }
-  )
+    )
 
   val name: String = nodePath.lastOption.map(_.lazyModule.name).getOrElse("disconnected")
 }
 
-case class AXI4StreamSlavePortParameters(
-  slaves: Seq[AXI4StreamSlaveParameters] = Seq(AXI4StreamSlaveParameters()))
-{
+case class AXI4StreamSlavePortParameters(slaves: Seq[AXI4StreamSlaveParameters] = Seq(AXI4StreamSlaveParameters())) {
   val slaveParams: AXI4StreamSlaveParameters = slaves.reduce((x, y) => x.union(y))
 }
 
@@ -78,12 +76,12 @@ object AXI4StreamSlavePortParameters {
   * @param nodePath path of nodes that got us here
   */
 case class AXI4StreamMasterParameters(
-  name: String = "",
-  n: Int = 8,
-  u: Int = 0,
+  name:       String = "",
+  n:          Int = 8,
+  u:          Int = 0,
   numMasters: Int = 1,
-  nodePath: Seq[BaseNode] = Seq())
-{
+  nodePath:   Seq[BaseNode] = Seq()
+) {
   require(n >= 0)
   require(u >= 0)
   require(numMasters >= 1)
@@ -96,8 +94,8 @@ case class AXI4StreamMasterParameters(
   def union(in: AXI4StreamMasterParameters): AXI4StreamMasterParameters = {
     AXI4StreamMasterParameters(
       name + "|" + in.name,
-      n max in.n,
-      u max in.u,
+      n.max(in.n),
+      u.max(in.u),
       numMasters + in.numMasters,
       // TODO this is bad
       nodePath ++ in.nodePath
@@ -106,8 +104,8 @@ case class AXI4StreamMasterParameters(
 }
 
 case class AXI4StreamMasterPortParameters(
-  masters: Seq[AXI4StreamMasterParameters] = Seq(AXI4StreamMasterParameters()))
-{
+  masters: Seq[AXI4StreamMasterParameters] = Seq(AXI4StreamMasterParameters())
+) {
   val masterParams: AXI4StreamMasterParameters = masters.reduce((x, y) => x.union(y))
 }
 
@@ -128,22 +126,22 @@ object AXI4StreamMasterPortParameters {
   * @param hasKeep bundle includes the keep field
   */
 case class AXI4StreamBundleParameters(
-  n: Int,
-  i: Int = 0,
-  d: Int = 0,
-  u: Int = 0,
+  n:       Int,
+  i:       Int = 0,
+  d:       Int = 0,
+  u:       Int = 0,
   hasData: Boolean = true,
   hasStrb: Boolean = false,
-  hasKeep: Boolean = false)
-{
-  require (n >= 0, s"AXI4Stream data bytes must be non-negative (got $n)")
-  require (i >= 0, s"AXI4Stream id bits must be non-negative (got $i)")
-  require (d >= 0, s"AXI4Stream dest bits must be non-negative (got $d)")
-  require (u >= 0, s"AXI4Stream user bits must be non-negative (got $u)")
+  hasKeep: Boolean = false
+) {
+  require(n >= 0, s"AXI4Stream data bytes must be non-negative (got $n)")
+  require(i >= 0, s"AXI4Stream id bits must be non-negative (got $i)")
+  require(d >= 0, s"AXI4Stream dest bits must be non-negative (got $d)")
+  require(u >= 0, s"AXI4Stream user bits must be non-negative (got $u)")
 
   val dataBits: Int = if (hasData) 8 * n else 0
-  val strbBits: Int = if (hasStrb) n     else 0
-  val keepBits: Int = if (hasKeep) n     else 0
+  val strbBits: Int = if (hasStrb) n else 0
+  val keepBits: Int = if (hasKeep) n else 0
 
   /**
     * Combine two parameters objects. Choose max of widths. If a field is present in
@@ -159,17 +157,17 @@ case class AXI4StreamBundleParameters(
       max(u, x.u),
       hasData || x.hasData,
       hasStrb || x.hasStrb,
-      hasKeep || x.hasKeep)
+      hasKeep || x.hasKeep
+    )
 }
 
-object AXI4StreamBundleParameters
-{
+object AXI4StreamBundleParameters {
+
   /**
     * Parameters for bundle with no fields
     */
-  val emptyBundleParameters: AXI4StreamBundleParameters = AXI4StreamBundleParameters(
-    n = 0, i = 0, d = 0, u =0,
-    hasData = false, hasStrb = false, hasKeep = false)
+  val emptyBundleParameters: AXI4StreamBundleParameters =
+    AXI4StreamBundleParameters(n = 0, i = 0, d = 0, u = 0, hasData = false, hasStrb = false, hasKeep = false)
 
   /**
     * Combine master and slave port parameters.
@@ -178,7 +176,10 @@ object AXI4StreamBundleParameters
     * @param slave slave port parameters
     * @return
     */
-  def joinEdge(master: AXI4StreamMasterPortParameters, slave: AXI4StreamSlavePortParameters): AXI4StreamBundleParameters = {
+  def joinEdge(
+    master: AXI4StreamMasterPortParameters,
+    slave:  AXI4StreamSlavePortParameters
+  ): AXI4StreamBundleParameters = {
     val m = master.masterParams
     val s = slave.slaveParams
 
@@ -189,16 +190,17 @@ object AXI4StreamBundleParameters
       m.u,
       s.hasData,
       s.hasStrb,
-      s.hasKeep)
+      s.hasKeep
+    )
   }
 }
 
 case class AXI4StreamEdgeParameters(
-  master: AXI4StreamMasterPortParameters,
-  slave:  AXI4StreamSlavePortParameters,
-  p: Parameters,
-  sourceInfo: SourceInfo)
-{
+  master:     AXI4StreamMasterPortParameters,
+  slave:      AXI4StreamSlavePortParameters,
+  p:          Parameters,
+  sourceInfo: SourceInfo
+) {
   val bundle: AXI4StreamBundleParameters = AXI4StreamBundleParameters.joinEdge(master, slave)
 }
 
@@ -214,11 +216,10 @@ object AXI4StreamAsyncMasterPortParameters {
 }
 
 case class AXI4StreamAsyncBundleParameters(async: AsyncQueueParams, base: AXI4StreamBundleParameters)
-case class AXI4StreamAsyncEdgeParameters
-(
-  master: AXI4StreamAsyncMasterPortParameters,
-  slave: AXI4StreamAsyncSlavePortParameters,
-  params: Parameters,
+case class AXI4StreamAsyncEdgeParameters(
+  master:     AXI4StreamAsyncMasterPortParameters,
+  slave:      AXI4StreamAsyncSlavePortParameters,
+  params:     Parameters,
   sourceInfo: SourceInfo
 ) {
   val bundle: AXI4StreamAsyncBundleParameters =

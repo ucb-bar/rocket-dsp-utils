@@ -8,55 +8,55 @@ import freechips.rocketchip.util.BundleMap
 
 object AXI4MasterModel {
   case class AWChannel(
-                        id: BigInt                = 0,
-                        addr: BigInt              = 0,
-                        len: BigInt               = 0,
-                        size: BigInt              = 0,
-                        burst: BigInt             = 0,
-                        lock: BigInt              = 0,
-                        cache: BigInt             = 0,
-                        prot: BigInt              = 0,
-                        qos: BigInt               = 0,
-                        region: BigInt            = 0,
-                        user: Map[String, BigInt] = Map()
-                      )
+    id:     BigInt = 0,
+    addr:   BigInt = 0,
+    len:    BigInt = 0,
+    size:   BigInt = 0,
+    burst:  BigInt = 0,
+    lock:   BigInt = 0,
+    cache:  BigInt = 0,
+    prot:   BigInt = 0,
+    qos:    BigInt = 0,
+    region: BigInt = 0,
+    user:   Map[String, BigInt] = Map()
+  )
   case class ARChannel(
-                        id: BigInt                = 0,
-                        addr: BigInt              = 0,
-                        len: BigInt               = 0,
-                        size: BigInt              = 0,
-                        burst: BigInt             = 0,
-                        lock: BigInt              = 0,
-                        cache: BigInt             = 0,
-                        prot: BigInt              = 0,
-                        qos: BigInt               = 0,
-                        region: BigInt            = 0,
-                        user: Map[String, BigInt] = Map()
-                      )
+    id:     BigInt = 0,
+    addr:   BigInt = 0,
+    len:    BigInt = 0,
+    size:   BigInt = 0,
+    burst:  BigInt = 0,
+    lock:   BigInt = 0,
+    cache:  BigInt = 0,
+    prot:   BigInt = 0,
+    qos:    BigInt = 0,
+    region: BigInt = 0,
+    user:   Map[String, BigInt] = Map()
+  )
   case class WChannel(
-                       data: BigInt = 0,
-                       strb: BigInt = 0,
-                       last: BigInt = 0
-                     )
+    data: BigInt = 0,
+    strb: BigInt = 0,
+    last: BigInt = 0
+  )
   case class RChannel(
-                       id: BigInt                = 0,
-                       data: BigInt              = 0,
-                       resp: BigInt              = 0,
-                       last: BigInt              = 0,
-                       user: Map[String, BigInt] = Map()
-                     )
+    id:   BigInt = 0,
+    data: BigInt = 0,
+    resp: BigInt = 0,
+    last: BigInt = 0,
+    user: Map[String, BigInt] = Map()
+  )
   case class BChannel(
-                       id: BigInt                = 0,
-                       resp: BigInt              = 0,
-                       user: Map[String, BigInt] = Map()
-                     )
+    id:   BigInt = 0,
+    resp: BigInt = 0,
+    user: Map[String, BigInt] = Map()
+  )
 
-  val BRESP_OKAY   = BigInt(0)
+  val BRESP_OKAY = BigInt(0)
   val BRESP_EXOKAY = BigInt(1)
   val BRESP_SLVERR = BigInt(2)
   val BRESP_DECERR = BigInt(3)
 
-  val RRESP_OKAY   = BigInt(0)
+  val RRESP_OKAY = BigInt(0)
   val RRESP_EXOKAY = BigInt(1)
   val RRESP_SLVERR = BigInt(2)
   val RRESP_DECERR = BigInt(3)
@@ -75,7 +75,7 @@ trait AXI4MasterModel extends MemMasterModel {
   }
 
   def pokeUser(user: BundleMap, values: Map[String, BigInt]): Unit = {
-    for ( (k, v) <- values ) {
+    for ((k, v) <- values) {
       user.elements.get(k) match {
         case Some(Pokeable(e)) =>
           poke(e, v)
@@ -90,20 +90,22 @@ trait AXI4MasterModel extends MemMasterModel {
   }
 
   def pokeAW(aw: AXI4BundleAW, value: AWChannel): Unit = {
-    poke(aw.id,     value.id)
-    poke(aw.addr,   value.addr)
-    poke(aw.len,    value.len)
-    poke(aw.size,   value.size)
-    poke(aw.burst,  value.burst)
-    poke(aw.lock,   value.lock)
-    poke(aw.cache,  value.cache)
-    poke(aw.prot,   value.prot)
-    poke(aw.qos,    value.qos)
+    poke(aw.id, value.id)
+    poke(aw.addr, value.addr)
+    poke(aw.len, value.len)
+    poke(aw.size, value.size)
+    poke(aw.burst, value.burst)
+    poke(aw.lock, value.lock)
+    poke(aw.cache, value.cache)
+    poke(aw.prot, value.prot)
+    poke(aw.qos, value.qos)
     // poke(aw., value.region)
-    require(value.region == BigInt(0), s"region is optional and rocket-chip left it out. overriding the default value here with ${value.region} won't do anything")
+    require(
+      value.region == BigInt(0),
+      s"region is optional and rocket-chip left it out. overriding the default value here with ${value.region} won't do anything"
+    )
     pokeUser(aw.user, value.user)
   }
-
 
   def pokeAR(ar: AXI4BundleAR, value: ARChannel): Unit = {
     poke(ar.id, value.id)
@@ -114,7 +116,7 @@ trait AXI4MasterModel extends MemMasterModel {
     poke(ar.lock, value.lock)
     poke(ar.cache, value.cache)
     poke(ar.prot, value.prot)
-    poke(ar.qos,  value.qos)
+    poke(ar.qos, value.qos)
     pokeUser(ar.user, value.user)
   }
 
@@ -126,7 +128,7 @@ trait AXI4MasterModel extends MemMasterModel {
 
   def peekR(r: AXI4BundleR): RChannel = {
     RChannel(
-      id   = peek(r.id),
+      id = peek(r.id),
       data = peek(r.data),
       resp = peek(r.resp),
       last = peek(r.last),
@@ -146,12 +148,12 @@ trait AXI4MasterModel extends MemMasterModel {
   def axiWriteWord(addr: BigInt, data: BigInt): Unit = {
     val awChannel = AWChannel(
       addr = addr,
-      size = 3        // 8 bytes
+      size = 3 // 8 bytes
     )
-    val wChannel  = WChannel(
+    val wChannel = WChannel(
       data = data,
-      strb = 0xFF,    // 8 bytes
-      last = true    // one word only
+      strb = 0xff, // 8 bytes
+      last = true // one word only
     )
 
     // poke AW and W channels
@@ -163,20 +165,20 @@ trait AXI4MasterModel extends MemMasterModel {
     var cyclesWaited = 0
 
     poke(memAXI.aw.valid, 1)
-    poke(memAXI.w.valid,  1)
+    poke(memAXI.w.valid, 1)
 
     while (!awFinished || !wFinished) {
       if (!awFinished) { awFinished = fire(memAXI.aw) }
-      if (! wFinished) {  wFinished = fire(memAXI.w)  }
+      if (!wFinished) { wFinished = fire(memAXI.w) }
       require(cyclesWaited < maxWait || awFinished, s"Timeout waiting for AW to be ready ($maxWait cycles)")
-      require(cyclesWaited < maxWait || wFinished,  s"Timeout waiting for W to be ready ($maxWait cycles)")
+      require(cyclesWaited < maxWait || wFinished, s"Timeout waiting for W to be ready ($maxWait cycles)")
       // if (cyclesWaited >= maxWait) {
       //   return
       // }
       cyclesWaited += 1
       step(1)
       if (awFinished) { poke(memAXI.aw.valid, 0) }
-      if ( wFinished) { poke(memAXI.w.valid,  0) }
+      if (wFinished) { poke(memAXI.w.valid, 0) }
     }
 
     // wait for resp
@@ -203,7 +205,7 @@ trait AXI4MasterModel extends MemMasterModel {
   def axiReadWord(addr: BigInt): BigInt = {
     val arChannel = ARChannel(
       addr = addr,
-      size = 3        // 8 bytes
+      size = 3 // 8 bytes
     )
 
     pokeAR(memAXI.ar.bits, arChannel)

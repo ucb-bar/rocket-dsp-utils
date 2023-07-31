@@ -26,7 +26,7 @@ trait DspBlock[D, U, EO, EI, B <: Data] extends LazyModule { ... }
 
 The type parameters `D`, `U`, `EO`, and `EI` are parameter types of the memory interface and `B` is the bundle type of the memory interface.
 There are flavors of `DspBlock` for each memory interface, for example
-```
+```scala
 trait TLDspBlock extends DspBlock[
   TLClientPortParameters,
   TLManagerPortParameters,
@@ -41,7 +41,7 @@ The `regmap` API is generic with respect to the type of the memory interface.
 The trait `HasCSR` can be mixed into `DspBlock` to make the block's memory node use the regmap API.
 An example `DspBlock` called `ByteRotate` is [here](https://github.com/ucb-bar/dsptools/blob/bd5b0912ef0c85226d6d53cf6a07ce43e2a0d959/rocket/src/main/scala/dspblocks/BasicBlocks.scala#L95)- note the call to `regmap()`.
 
-```
+```scala
 // D, U, EO, EI are memory interface parameter types
 // B is memory interface bundle type
 abstract class ByteRotate[D, U, EO, EI, B <: Data]()(implicit p: Parameters) extends DspBlock[D, U, EO, EI, B] with HasCSR {
@@ -114,14 +114,14 @@ This is achieved with mixin traits:
 
 `StandaloneBlock` et. al. should not generally be mixed in with your `DspBlock`'s class.
 
-```
+```scala
 // DON'T DO THIS!!! (UNLESS YOU'RE POSITIVE IT'S WHAT YOU WANT)
 class MyBlock() extends AXI4DspBlock with AXI4StandaloneBlock { ... }
 ```
 
 Instead, you should mixin in your tester, like these truncated examples from [here](https://github.com/ucb-bar/dsptools/blob/master/rocket/src/test/scala/dspblocks/BasicBlockTesters.scala):
 
-```
+```scala
 abstract class PassthroughTester[D, U, EO, EI, B <: Data](dut: Passthrough[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B])
 extends PeekPokeTester(dut.module)
 class AXI4PassthroughTester(c: AXI4Passthrough with AXI4StandaloneBlock)
@@ -129,7 +129,7 @@ class AXI4PassthroughTester(c: AXI4Passthrough with AXI4StandaloneBlock)
 ```
 
 The tester then needs to be invoked with the mixin, [like so](https://github.com/ucb-bar/dsptools/blob/master/rocket/src/test/scala/dspblocks/DspBlockSpec.scala#L15):
-```
+```scala
 // do the mixin here
 val lazymod = LazyModule(new AXI4Passthrough(params) with AXI4StandaloneBlock)
 val dut = () => lazymod.module

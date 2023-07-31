@@ -4,21 +4,22 @@ import chisel3.util.Queue
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 
-class AXI4StreamBuffer(params: BufferParams) extends LazyModule()(Parameters.empty){
+class AXI4StreamBuffer(params: BufferParams) extends LazyModule()(Parameters.empty) {
   val node = AXI4StreamIdentityNode()
 
   lazy val module = new LazyModuleImp(this) {
-    (node.in zip node.out) foreach { case ((in, _), (out, _)) =>
-      if (params.isDefined) {
-        val queue = Queue.irrevocable(in, params.depth, pipe=params.pipe, flow=params.flow)
-        out.valid := queue.valid
-        out.bits := queue.bits
-        queue.ready := out.ready
-      } else {
-        out.valid := in.valid
-        out.bits := in.bits
-        in.ready := out.ready
-      }
+    (node.in.zip(node.out)).foreach {
+      case ((in, _), (out, _)) =>
+        if (params.isDefined) {
+          val queue = Queue.irrevocable(in, params.depth, pipe = params.pipe, flow = params.flow)
+          out.valid := queue.valid
+          out.bits := queue.bits
+          queue.ready := out.ready
+        } else {
+          out.valid := in.valid
+          out.bits := in.bits
+          in.ready := out.ready
+        }
     }
   }
 }

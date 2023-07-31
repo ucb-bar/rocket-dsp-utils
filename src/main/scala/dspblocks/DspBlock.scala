@@ -19,10 +19,12 @@ import freechips.rocketchip.tilelink._
   * @tparam B Bundle parameter type
   */
 trait DspBlock[D, U, EO, EI, B <: Data] extends LazyModule {
+
   /**
     * Diplomatic node for AXI4-Stream interfaces
     */
   val streamNode: AXI4StreamNodeHandle
+
   /**
     * Diplmatic node for memory interface
     * Some blocks might not need memory mapping, so this is an Option[]
@@ -58,67 +60,81 @@ trait StandaloneBlock[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B]
 /**
   * AXI4-flavor of standalone block. Adds BundleBridge AXI4 interface.
   */
-trait AXI4StandaloneBlock extends StandaloneBlock[
-  AXI4MasterPortParameters,
-  AXI4SlavePortParameters,
-  AXI4EdgeParameters,
-  AXI4EdgeParameters,
-  AXI4Bundle] {
+trait AXI4StandaloneBlock
+    extends StandaloneBlock[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ] {
   def standaloneParams = AXI4BundleParameters(addrBits = 64, dataBits = 64, idBits = 1)
-  val ioMem = mem.map { m => {
-    val ioMemNode = BundleBridgeSource(() => AXI4Bundle(standaloneParams))
+  val ioMem = mem.map { m =>
+    {
+      val ioMemNode = BundleBridgeSource(() => AXI4Bundle(standaloneParams))
 
-    m :=
-      BundleBridgeToAXI4(AXI4MasterPortParameters(Seq(AXI4MasterParameters("bundleBridgeToAXI4")))) :=
-      ioMemNode
+      m :=
+        BundleBridgeToAXI4(AXI4MasterPortParameters(Seq(AXI4MasterParameters("bundleBridgeToAXI4")))) :=
+        ioMemNode
 
-    val ioMem = InModuleBody { ioMemNode.makeIO() }
-    ioMem
-  }}
+      val ioMem = InModuleBody { ioMemNode.makeIO() }
+      ioMem
+    }
+  }
 }
 
 /**
   * APB-flavor of standalone block. Adds BundleBridge APB interface.
   */
-trait APBStandaloneBlock extends StandaloneBlock[
-  APBMasterPortParameters,
-  APBSlavePortParameters,
-  APBEdgeParameters,
-  APBEdgeParameters,
-  APBBundle] {
+trait APBStandaloneBlock
+    extends StandaloneBlock[
+      APBMasterPortParameters,
+      APBSlavePortParameters,
+      APBEdgeParameters,
+      APBEdgeParameters,
+      APBBundle
+    ] {
   def standaloneParams = APBBundleParameters(addrBits = 64, dataBits = 64)
-  val ioMem = mem.map { m => {
-    val ioMemNode = BundleBridgeSource(() => APBBundle(standaloneParams))
-    m :=
-      BundleBridgeToAPB(APBMasterPortParameters(Seq(APBMasterParameters("bundleBridgeToAPB")))) :=
-      ioMemNode
+  val ioMem = mem.map { m =>
+    {
+      val ioMemNode = BundleBridgeSource(() => APBBundle(standaloneParams))
+      m :=
+        BundleBridgeToAPB(APBMasterPortParameters(Seq(APBMasterParameters("bundleBridgeToAPB")))) :=
+        ioMemNode
 
-    val ioMem = InModuleBody { ioMemNode.makeIO() }
-    ioMem
-  }}
+      val ioMem = InModuleBody { ioMemNode.makeIO() }
+      ioMem
+    }
+  }
 }
 
 /**
   * TL-flavor of standalone block. Adds BundleBridge TL interface.
   */
-trait TLStandaloneBlock extends StandaloneBlock[
-  TLClientPortParameters,
-  TLManagerPortParameters,
-  TLEdgeOut,
-  TLEdgeIn,
-  TLBundle] {
-  def standaloneParams = TLBundleParameters(addressBits = 64, dataBits = 64, sourceBits = 1,
-    sinkBits = 1, sizeBits = 6,
-    echoFields = Seq(), requestFields = Seq(), responseFields = Seq(),
-    hasBCE = false)
-  val ioMem = mem.map { m => {
-    val ioMemNode = BundleBridgeSource(() => TLBundle(standaloneParams))
-    m :=
-      BundleBridgeToTL(TLMasterPortParameters.v1(Seq(TLMasterParameters.v1("bundleBridgeToTL")))) :=
-      ioMemNode
-    val ioMem = InModuleBody { ioMemNode.makeIO() }
-    ioMem
-  }}
+trait TLStandaloneBlock
+    extends StandaloneBlock[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle] {
+  def standaloneParams =
+    TLBundleParameters(
+      addressBits = 64,
+      dataBits = 64,
+      sourceBits = 1,
+      sinkBits = 1,
+      sizeBits = 6,
+      echoFields = Seq(),
+      requestFields = Seq(),
+      responseFields = Seq(),
+      hasBCE = false
+    )
+  val ioMem = mem.map { m =>
+    {
+      val ioMemNode = BundleBridgeSource(() => TLBundle(standaloneParams))
+      m :=
+        BundleBridgeToTL(TLMasterPortParameters.v1(Seq(TLMasterParameters.v1("bundleBridgeToTL")))) :=
+        ioMemNode
+      val ioMem = InModuleBody { ioMemNode.makeIO() }
+      ioMem
+    }
+  }
 }
 
 trait TLDspBlock extends DspBlock[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle]
@@ -128,7 +144,8 @@ trait TLDspBlockWithBus extends TLDspBlock {
   val mem = Some(bus.node)
 }
 
-trait APBDspBlock extends DspBlock[APBMasterPortParameters, APBSlavePortParameters, APBEdgeParameters, APBEdgeParameters, APBBundle]
+trait APBDspBlock
+    extends DspBlock[APBMasterPortParameters, APBSlavePortParameters, APBEdgeParameters, APBEdgeParameters, APBBundle]
 
 trait APBDspBlockWithBus extends APBDspBlock {
   val bus = LazyModule(new APBFanout)
@@ -137,19 +154,39 @@ trait APBDspBlockWithBus extends APBDspBlock {
 
 object AXI4DspBlock {
   type AXI4Node = MixedNode[
-    AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4Bundle,
-    AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4Bundle
-    ]
+    AXI4MasterPortParameters,
+    AXI4SlavePortParameters,
+    AXI4EdgeParameters,
+    AXI4Bundle,
+    AXI4MasterPortParameters,
+    AXI4SlavePortParameters,
+    AXI4EdgeParameters,
+    AXI4Bundle
+  ]
 }
 
-trait AXI4DspBlock extends DspBlock[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters, AXI4Bundle]
+trait AXI4DspBlock
+    extends DspBlock[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ]
 
 trait AXI4DspBlockWithBus extends AXI4DspBlock {
   val bus = LazyModule(new AXI4Xbar)
   val mem = Some(bus.node)
 }
 
-trait AHBSlaveDspBlock extends DspBlock[AHBMasterPortParameters, AHBSlavePortParameters, AHBEdgeParameters, AHBEdgeParameters, AHBSlaveBundle]
+trait AHBSlaveDspBlock
+    extends DspBlock[
+      AHBMasterPortParameters,
+      AHBSlavePortParameters,
+      AHBEdgeParameters,
+      AHBEdgeParameters,
+      AHBSlaveBundle
+    ]
 
 trait AHBSlaveDspBlockWithBus extends AHBSlaveDspBlock {
   val bus = LazyModule(new AHBFanout)

@@ -1,7 +1,7 @@
 package freechips.rocketchip.amba.axi4stream
 
 import chisel3._
-import chisel3.util.{Decoupled, Queue, log2Ceil}
+import chisel3.util.{log2Ceil, Decoupled, Queue}
 import dspblocks.AXI4DspBlock
 import freechips.rocketchip.amba.axi4._
 import org.chipsalliance.cde.config.Parameters
@@ -13,29 +13,33 @@ import freechips.rocketchip.regmapper._
   * @param addrWidth width of address
   * @param lenWidth width of length
   */
-class DMARequest
-(
+class DMARequest(
   val addrWidth: Int,
-  val lenWidth: Int,
+  val lenWidth:  Int
 ) extends Bundle {
+
   /**
     * Base address of DMA request
     */
   val baseAddress: UInt = UInt(addrWidth.W)
+
   /**
     * Length of DMA request, minus 1. length = 0 corresponds to a single beat
     */
   val length: UInt = UInt(lenWidth.W)
+
   /**
     * Default value is zero. If > 0, then do the same read or write @cycles number of times
     */
   val cycles: UInt = UInt(addrWidth.W)
+
   /**
     * If false, addresses considered are from @baseAddress to @baseAddress + @length
     * If true, addresses considered are @baseAddress only, in fixed mode
     */
   val fixedAddress: UInt = Bool()
 }
+
 /**
   * Companion object factory
   */
@@ -46,14 +50,17 @@ object DMARequest {
 }
 
 class SimpleDMARequest(addrWidth: Int, lenWidth: Int) extends Bundle {
+
   /**
     * Base address of DMA request
     */
   val baseAddress: UInt = UInt(addrWidth.W)
+
   /**
     * Length of DMA request, minus 1. length = 0 corresponds to a single beat
     */
   val length: UInt = UInt(lenWidth.W)
+
   /**
     * If false, addresses considered are from @baseAddress to @baseAddress + @length
     * If true, addresses considered are @baseAddress only, in fixed mode
@@ -72,7 +79,7 @@ class DMASimplifierIO(addrWidth: Int, complexLenWidth: Int, simpleLenWidth: Int)
 
 }
 class DMASimplifier(val addrWidth: Int, val complexLenWidth: Int, val simpleLenWidth: Int, val beatBytes: Int)
-  extends Module {
+    extends Module {
   require(complexLenWidth >= simpleLenWidth)
 
   val io = IO(new DMASimplifierIO(addrWidth, complexLenWidth, simpleLenWidth))
@@ -93,11 +100,11 @@ class DMASimplifier(val addrWidth: Int, val complexLenWidth: Int, val simpleLenW
   io.out.bits.fixedAddress := io.in.bits.fixedAddress
 
   io.in.ready := last && io.out.ready
-  when (io.out.fire) {
+  when(io.out.fire) {
     lengthCnt := Mux(lastBeat, 0.U, lengthCnt + 1.U)
     cycleCnt := Mux(lastBeat, cycleCnt + 1.U, cycleCnt)
   }
-  when (io.in.fire) {
+  when(io.in.fire) {
     lengthCnt := 0.U
     cycleCnt := 0.U
   }
@@ -109,20 +116,26 @@ class DMASimplifier(val addrWidth: Int, val complexLenWidth: Int, val simpleLenW
   * @param id id range, but only one is used
   * @param aligned aligned accesses only
   */
-class StreamingAXI4DMA
-(
-  id: IdRange = IdRange(0, 1),
-  aligned: Boolean = false,
+class StreamingAXI4DMA(
+  id:      IdRange = IdRange(0, 1),
+  aligned: Boolean = false
 ) extends LazyModule()(Parameters.empty) {
 
   val streamNode = AXI4StreamIdentityNode()
-  val axiNode = AXI4MasterNode(Seq(AXI4MasterPortParameters(
-    Seq(AXI4MasterParameters(
-      name = name,
-      id = id,
-      aligned = aligned,
-      maxFlight = Some(2)
-    )))))
+  val axiNode = AXI4MasterNode(
+    Seq(
+      AXI4MasterPortParameters(
+        Seq(
+          AXI4MasterParameters(
+            name = name,
+            id = id,
+            aligned = aligned,
+            maxFlight = Some(2)
+          )
+        )
+      )
+    )
+  )
 
   lazy val module = new Impl
   class Impl extends LazyModuleImp(this) {
@@ -132,13 +145,15 @@ class StreamingAXI4DMA
 
     require(inP.bundle.hasData)
     require(!inP.bundle.hasKeep)
-    require(inP.bundle.n * 8 == axiP.bundle.dataBits,
-      s"Streaming interface was ${inP.bundle.n * 8} bits, axi was ${axiP.bundle.dataBits}")
+    require(
+      inP.bundle.n * 8 == axiP.bundle.dataBits,
+      s"Streaming interface was ${inP.bundle.n * 8} bits, axi was ${axiP.bundle.dataBits}"
+    )
 
-    val addrWidth: Int = axiP.bundle.addrBits
-    val lenWidth: Int = axiP.bundle.lenBits
+    val addrWidth:  Int = axiP.bundle.addrBits
+    val lenWidth:   Int = axiP.bundle.lenBits
     val beatLength: Int = 1 << lenWidth
-    val dataWidth: Int = axiP.bundle.dataBits
+    val dataWidth:  Int = axiP.bundle.dataBits
     val beatBytes = dataWidth >> 3
 
     val enable = IO(Input(Bool()))
@@ -154,9 +169,13 @@ class StreamingAXI4DMA
     val writeWatchdog = IO(Output(Bool()))
     val writeError = IO(Output(Bool()))
 
-    val streamToMemRequest = IO(Flipped(Decoupled(
-      DMARequest(addrWidth = addrWidth, lenWidth = addrWidth)
-    )))
+    val streamToMemRequest = IO(
+      Flipped(
+        Decoupled(
+          DMARequest(addrWidth = addrWidth, lenWidth = addrWidth)
+        )
+      )
+    )
     val streamToMemLengthRemaining = IO(Output(UInt(lenWidth.W)))
 
     val streamToMemQueue = Module(new Queue(DMARequest(addrWidth = addrWidth, lenWidth = addrWidth), 8))
@@ -166,12 +185,22 @@ class StreamingAXI4DMA
     streamToMemQueueCount := streamToMemQueue.io.count
 
     val streamToMemSimple = Module(
-      new DMASimplifier(addrWidth = addrWidth, complexLenWidth = addrWidth, simpleLenWidth = lenWidth, beatBytes = beatBytes))
+      new DMASimplifier(
+        addrWidth = addrWidth,
+        complexLenWidth = addrWidth,
+        simpleLenWidth = lenWidth,
+        beatBytes = beatBytes
+      )
+    )
     streamToMemSimple.io.in <> streamToMemQueue.io.deq
 
-    val memToStreamRequest = IO(Flipped(Decoupled(
-      DMARequest(addrWidth = addrWidth, lenWidth = addrWidth)
-    )))
+    val memToStreamRequest = IO(
+      Flipped(
+        Decoupled(
+          DMARequest(addrWidth = addrWidth, lenWidth = addrWidth)
+        )
+      )
+    )
     val memToStreamLengthRemaining = IO(Output(UInt(lenWidth.W)))
 
     val memToStreamQueue = Module(new Queue(DMARequest(addrWidth = addrWidth, lenWidth = addrWidth), 8))
@@ -181,7 +210,13 @@ class StreamingAXI4DMA
     memToStreamQueueCount := memToStreamQueue.io.count
 
     val memToStreamSimple = Module(
-      new DMASimplifier(addrWidth = addrWidth, complexLenWidth = addrWidth, simpleLenWidth = lenWidth, beatBytes = beatBytes))
+      new DMASimplifier(
+        addrWidth = addrWidth,
+        complexLenWidth = addrWidth,
+        simpleLenWidth = lenWidth,
+        beatBytes = beatBytes
+      )
+    )
     memToStreamSimple.io.in <> memToStreamQueue.io.deq
 
     val reading = RegInit(false.B)
@@ -215,7 +250,7 @@ class StreamingAXI4DMA
     axi.ar.valid := !reading && enable && memToStreamSimple.io.out.valid
     memToStreamSimple.io.out.ready := !reading && enable && axi.ar.ready
 
-    when (memToStreamSimple.io.out.fire) {
+    when(memToStreamSimple.io.out.fire) {
       reading := true.B
       readDescriptor := memToStreamSimple.io.out.bits
       readBeatCounter := 0.U
@@ -224,17 +259,17 @@ class StreamingAXI4DMA
 
     axi.aw.valid := !writing && enable && streamToMemSimple.io.out.valid
     streamToMemSimple.io.out.ready := !writing && enable && axi.aw.ready
-    when (streamToMemSimple.io.out.fire) {
+    when(streamToMemSimple.io.out.fire) {
       writing := true.B
       writeDescriptor := streamToMemSimple.io.out.bits
       writeBeatCounter := 0.U
       writeWatchdogCounter := 0.U
     }
 
-    when (reading) {
+    when(reading) {
       readWatchdogCounter := readWatchdogCounter + 1.U
     }
-    when (writing) {
+    when(writing) {
       writeWatchdogCounter := writeWatchdogCounter + 1.U
     }
 
@@ -254,10 +289,10 @@ class StreamingAXI4DMA
     axi.ar.bits.prot := arprot
     axi.ar.bits.size := log2Ceil((dataWidth + 7) / 8).U
 
-    when (axi.r.fire) {
+    when(axi.r.fire) {
       readBeatCounter := readBeatCounter + 1.U
       // todo: readDescriptor isn't correct for a single-beat single-cycle transaction (are they possible?)
-      when (axi.r.bits.last || readBeatCounter >= readDescriptor.length) {
+      when(axi.r.bits.last || readBeatCounter >= readDescriptor.length) {
         readComplete := true.B
         reading := false.B
       }
@@ -268,7 +303,8 @@ class StreamingAXI4DMA
     writeBuffer.io.enq <> in
     axi.w.bits.data := writeBuffer.io.deq.bits.data
     axi.w.bits.strb := writeBuffer.io.deq.bits.makeStrb
-    axi.w.bits.last := Mux(axi.aw.fire, // check if single beat
+    axi.w.bits.last := Mux(
+      axi.aw.fire, // check if single beat
       axi.aw.bits.len === 0.U, // if single beat, writeBeatCounter and writeDescriptor won't be set
       writeBeatCounter >= writeDescriptor.length
     )
@@ -284,9 +320,9 @@ class StreamingAXI4DMA
     axi.aw.bits.prot := awprot
     axi.aw.bits.size := log2Ceil((dataWidth + 7) / 8).U
 
-    when (axi.w.fire) {
+    when(axi.w.fire) {
       writeBeatCounter := writeBeatCounter + 1.U
-      when (axi.w.bits.last) {
+      when(axi.w.bits.last) {
         writing := false.B
         writeComplete := true.B
       }
@@ -294,24 +330,23 @@ class StreamingAXI4DMA
 
     axi.b.ready := true.B // should probably monitor responses!
 
-    when (axi.b.fire) {
+    when(axi.b.fire) {
       writeError := axi.b.bits.resp =/= AXI4Parameters.RESP_OKAY
     }
 
     idle :=
-        !reading &&
+      !reading &&
         !writing &&
         writeBuffer.io.count === 0.U &&
         readBuffer.io.count === 0.U
   }
 }
 
-class StreamingAXI4DMAWithCSR
-(
+class StreamingAXI4DMAWithCSR(
   csrAddress: AddressSet,
-  beatBytes: Int = 4,
-  id: IdRange = IdRange(0, 1),
-  aligned: Boolean = false,
+  beatBytes:  Int = 4,
+  id:         IdRange = IdRange(0, 1),
+  aligned:    Boolean = false
 ) extends LazyModule()(Parameters.empty) { outer =>
 
   val dma = LazyModule(new StreamingAXI4DMA(id = id, aligned = aligned))
@@ -331,22 +366,22 @@ class StreamingAXI4DMAWithCSR
 
     dma.enable := enReg
 
-    when (dma.readComplete) {
+    when(dma.readComplete) {
       intReg := intReg | 1.U
     }
-    when (dma.readWatchdog) {
+    when(dma.readWatchdog) {
       intReg := intReg | 2.U
     }
-    when (dma.readError) {
+    when(dma.readError) {
       intReg := intReg | 4.U
     }
-    when (dma.writeComplete) {
+    when(dma.writeComplete) {
       intReg := intReg | 8.U
     }
-    when (dma.writeWatchdog) {
+    when(dma.writeWatchdog) {
       intReg := intReg | 16.U
     }
-    when (dma.writeError) {
+    when(dma.writeError) {
       intReg := intReg | 32.U
     }
 
@@ -391,40 +426,47 @@ class StreamingAXI4DMAWithCSR
       axiSlaveNode.beatBytes * 5 -> Seq(RegField(beatBytes * 8, s2mLength)),
       axiSlaveNode.beatBytes * 6 -> Seq(RegField(beatBytes * 8, s2mCycles)),
       axiSlaveNode.beatBytes * 7 -> Seq(RegField(1, s2mFixedAddress)),
-      axiSlaveNode.beatBytes * 8 -> Seq(RegField(beatBytes * 8,
-        dma.streamToMemLengthRemaining,
-        RegWriteFn((valid, data) => {
-          dma.streamToMemRequest.valid := valid
-          dma.streamToMemRequest.ready
-        }))),
-      axiSlaveNode.beatBytes * 9  -> Seq(RegField(beatBytes * 8, m2sBaseAddress)),
+      axiSlaveNode.beatBytes * 8 -> Seq(
+        RegField(
+          beatBytes * 8,
+          dma.streamToMemLengthRemaining,
+          RegWriteFn((valid, data) => {
+            dma.streamToMemRequest.valid := valid
+            dma.streamToMemRequest.ready
+          })
+        )
+      ),
+      axiSlaveNode.beatBytes * 9 -> Seq(RegField(beatBytes * 8, m2sBaseAddress)),
       axiSlaveNode.beatBytes * 10 -> Seq(RegField(beatBytes * 8, m2sLength)),
       axiSlaveNode.beatBytes * 11 -> Seq(RegField(beatBytes * 8, m2sCycles)),
       axiSlaveNode.beatBytes * 12 -> Seq(RegField(1, m2sFixedAddress)),
-      axiSlaveNode.beatBytes * 13 -> Seq(RegField(beatBytes * 8,
-        dma.memToStreamLengthRemaining,
-        RegWriteFn((valid, data) => {
-          dma.memToStreamRequest.valid := valid
-          dma.memToStreamRequest.ready
-        }))),
+      axiSlaveNode.beatBytes * 13 -> Seq(
+        RegField(
+          beatBytes * 8,
+          dma.memToStreamLengthRemaining,
+          RegWriteFn((valid, data) => {
+            dma.memToStreamRequest.valid := valid
+            dma.memToStreamRequest.ready
+          })
+        )
+      ),
       axiSlaveNode.beatBytes * 14 -> Seq(RegField(AXI4Parameters.protBits, arprot)),
       axiSlaveNode.beatBytes * 15 -> Seq(RegField(AXI4Parameters.protBits, awprot)),
       axiSlaveNode.beatBytes * 16 -> Seq(RegField(AXI4Parameters.cacheBits, arcache)),
-      axiSlaveNode.beatBytes * 17 -> Seq(RegField(AXI4Parameters.cacheBits, awcache)),
+      axiSlaveNode.beatBytes * 17 -> Seq(RegField(AXI4Parameters.cacheBits, awcache))
     )
   }
 }
 
-class StreamingAXI4DMAWithMemory
-(
-  address: AddressSet,
-  id: IdRange = IdRange(0, 1),
-  aligned: Boolean = false,
+class StreamingAXI4DMAWithMemory(
+  address:    AddressSet,
+  id:         IdRange = IdRange(0, 1),
+  aligned:    Boolean = false,
   executable: Boolean = true,
-  beatBytes: Int = 4,
-  devName: Option[String] = None,
-  errors: Seq[AddressSet] = Nil,
-  wcorrupt: Boolean = false
+  beatBytes:  Int = 4,
+  devName:    Option[String] = None,
+  errors:     Seq[AddressSet] = Nil,
+  wcorrupt:   Boolean = false
 ) extends LazyModule()(Parameters.empty) {
 
   val dma = LazyModule(new StreamingAXI4DMA(id = id, aligned = aligned))
@@ -434,12 +476,12 @@ class StreamingAXI4DMAWithMemory
   val streamNode = NodeHandle(lhs.inward, rhs.outward)
 
   val ram = AXI4RAM(
-    address=address,
-    executable=executable,
-    beatBytes=beatBytes,
+    address = address,
+    executable = executable,
+    beatBytes = beatBytes,
     devName = devName,
     errors = errors,
-    cacheable = false,
+    cacheable = false
   )
 
   ram := AXI4Fragmenter() := dma.axiNode
@@ -453,7 +495,6 @@ class StreamingAXI4DMAWithMemory
     val lenWidth = dma.module.lenWidth
     val beatLength = 1 << lenWidth
     val dataWidth = dma.module.dataWidth
-
 
     val io = IO(new Bundle {
       val enable = Input(Bool())
@@ -469,14 +510,18 @@ class StreamingAXI4DMAWithMemory
       val writeWatchdog = Output(Bool())
       val writeError = Output(Bool())
 
-      val streamToMemRequest = Flipped(Decoupled(
-        DMARequest(addrWidth = addrWidth, lenWidth = lenWidth)
-      ))
+      val streamToMemRequest = Flipped(
+        Decoupled(
+          DMARequest(addrWidth = addrWidth, lenWidth = lenWidth)
+        )
+      )
       val streamToMemLengthRemaining = Output(UInt(lenWidth.W))
 
-      val memToStreamRequest = Flipped(Decoupled(
-        DMARequest(addrWidth = addrWidth, lenWidth = lenWidth)
-      ))
+      val memToStreamRequest = Flipped(
+        Decoupled(
+          DMARequest(addrWidth = addrWidth, lenWidth = lenWidth)
+        )
+      )
       val memToStreamLengthRemaining = Output(UInt(lenWidth.W))
     })
 
@@ -498,14 +543,14 @@ class StreamingAXI4DMAWithMemory
   }
 }
 
-class StreamingAXI4DMAWithCSRWithScratchpad
-(
-  val csrAddress: AddressSet,
+class StreamingAXI4DMAWithCSRWithScratchpad(
+  val csrAddress:        AddressSet,
   val scratchpadAddress: AddressSet,
-  val beatBytes: Int = 4,
-  val id: IdRange = IdRange(0, 1),
-  val aligned: Boolean = false,
-) extends LazyModule()(Parameters.empty) with AXI4DspBlock {
+  val beatBytes:         Int = 4,
+  val id:                IdRange = IdRange(0, 1),
+  val aligned:           Boolean = false
+) extends LazyModule()(Parameters.empty)
+    with AXI4DspBlock {
   val dma = LazyModule(new StreamingAXI4DMAWithCSR(csrAddress, beatBytes, id, aligned))
 
   val streamNode = NodeHandle(dma.streamNode.inward, dma.streamNode.outward)
@@ -516,7 +561,7 @@ class StreamingAXI4DMAWithCSRWithScratchpad
     executable = false,
     beatBytes = beatBytes,
     devName = Some("bwrc,dmascratchpad"),
-    errors = Nil,
+    errors = Nil
   )
 
   val ramXbar = AXI4Xbar()

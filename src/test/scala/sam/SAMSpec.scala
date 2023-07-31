@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 package sam
 
-
 //TODO: CHIPYARD Cannot find DspBlockTester, hard to fix this without that
 /*
 
@@ -158,4 +157,4 @@ class SAMWrapperSpec extends FlatSpec with Matchers {
     chiseltest.iotesters.Driver.execute(dut, manager) { c => new SAMWrapperTester(c) } should be (true)
   }
 }
-*/
+ */

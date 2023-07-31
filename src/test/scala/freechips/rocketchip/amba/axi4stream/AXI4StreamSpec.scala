@@ -16,13 +16,15 @@ import org.scalatest.matchers.should.Matchers
 
 trait TMModuleImp {
   val sinkBundle: AXI4StreamBundle
-  val edge: AXI4StreamEdgeParameters
-  val out: AXI4StreamBundle
+  val edge:       AXI4StreamEdgeParameters
+  val out:        AXI4StreamBundle
 }
 
-class TestModule(val inP: AXI4StreamBundleParameters,
-                 outP: AXI4StreamSlaveParameters,
-                 func: (AXI4StreamMasterNode, Parameters) => AXI4StreamNodeHandle) extends Module {
+class TestModule(
+  val inP: AXI4StreamBundleParameters,
+  outP:    AXI4StreamSlaveParameters,
+  func:    (AXI4StreamMasterNode, Parameters) => AXI4StreamNodeHandle
+) extends Module {
   implicit val p: Parameters = Parameters.empty
   import DoubleToBigIntRand._
   val transactions = AXI4StreamTransaction.defaultSeq(100).map(_.randData(Uniform(0, 65535)))
@@ -50,11 +52,13 @@ class TestModule(val inP: AXI4StreamBundleParameters,
   io.out <> mod.out
 }
 
-class TestModuleTester(c: TestModule,
-                       expectTranslator: Seq[AXI4StreamTransaction] => Seq[AXI4StreamTransactionExpect] =
-                         { _.map(t => AXI4StreamTransactionExpect(data = Some(t.data))) }
-                      )
-  extends PeekPokeTester(c) with AXI4StreamSlaveModel[TestModule] {
+class TestModuleTester(
+  c: TestModule,
+  expectTranslator: Seq[AXI4StreamTransaction] => Seq[AXI4StreamTransactionExpect] = {
+    _.map(t => AXI4StreamTransactionExpect(data = Some(t.data)))
+  }
+) extends PeekPokeTester(c)
+    with AXI4StreamSlaveModel[TestModule] {
   bindSlave(c.io.out).addExpects(
     expectTranslator(c.transactions)
   )
@@ -62,8 +66,9 @@ class TestModuleTester(c: TestModule,
 }
 
 abstract class StreamMuxTester[D, U, EO, EI, B <: Data](c: StreamMux[D, U, EO, EI, B] with MuxInOuts[D, U, EO, EI, B])
-  extends PeekPokeTester(c.module)
-  with AXI4StreamModel[LazyModuleImp with SMModuleImp] with MemMasterModel {
+    extends PeekPokeTester(c.module)
+    with AXI4StreamModel[LazyModuleImp with SMModuleImp]
+    with MemMasterModel {
 
   val inMasters = c.ins.map(in => bindMaster(in.getWrappedValue))
   val outSlaves = c.outIOs.map(out => bindSlave(out.getWrappedValue))
@@ -73,8 +78,7 @@ abstract class StreamMuxTester[D, U, EO, EI, B <: Data](c: StreamMux[D, U, EO, E
   for ((in, inIdx) <- inMasters.zipWithIndex) {
     in.addTransactions(Seq.fill(outSlaves.length)(AXI4StreamTransaction(data = inIdx)))
   }
-  for ((out, outIdx) <- outSlaves.zipWithIndex) {
-  }
+  for ((out, outIdx) <- outSlaves.zipWithIndex) {}
 
   for (offset <- 0 until c.module.ins.length) {
     // set the input->output mapping
@@ -91,7 +95,7 @@ abstract class StreamMuxTester[D, U, EO, EI, B <: Data](c: StreamMux[D, U, EO, E
 
 trait MuxInOuts[D, U, EO, EI, B <: Data] {
   self: StreamMux[D, U, EO, EI, B] =>
-  def nIn: Int
+  def nIn:  Int
   def nOut: Int
 
   val ins: Seq[ModuleValue[AXI4StreamBundle]] = for (i <- 0 until nIn) yield {
@@ -111,41 +115,60 @@ trait MuxInOuts[D, U, EO, EI, B <: Data] {
     InModuleBody { out.makeIO() }
   }
 }
-trait AXI4MuxInOuts extends AXI4StreamMux with
-MuxInOuts[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters, AXI4Bundle] {
-  val ioMem = mem.map { m => {
-    val ioMemNode = BundleBridgeSource(() => AXI4Bundle(AXI4BundleParameters(addrBits = 32, dataBits = beatBytes * 8, idBits = 1)))
+trait AXI4MuxInOuts
+    extends AXI4StreamMux
+    with MuxInOuts[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ] {
+  val ioMem = mem.map { m =>
+    {
+      val ioMemNode =
+        BundleBridgeSource(() => AXI4Bundle(AXI4BundleParameters(addrBits = 32, dataBits = beatBytes * 8, idBits = 1)))
 
-    m :=
-      BundleBridgeToAXI4(AXI4MasterPortParameters(Seq(AXI4MasterParameters("bundleBridgeToAXI4")))) :=
-      ioMemNode
+      m :=
+        BundleBridgeToAXI4(AXI4MasterPortParameters(Seq(AXI4MasterParameters("bundleBridgeToAXI4")))) :=
+        ioMemNode
 
-    val ioMem = InModuleBody { ioMemNode.makeIO() }
-    ioMem
-  }}
+      val ioMem = InModuleBody { ioMemNode.makeIO() }
+      ioMem
+    }
+  }
 }
 
-trait TLMuxInOuts extends TLStreamMux with
-MuxInOuts[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle] {
-  val ioMem = mem.map { m => {
-    val ioMemNode = BundleBridgeSource(() => TLBundle(TLBundleParameters(addressBits = 32, dataBits = beatBytes * 8,
-      sourceBits = 1,
-      sinkBits = 1,
-      sizeBits = 1,
-      //TODO: CHIPYARD: figure this out
-      echoFields = Seq.empty,
-      requestFields = Seq.empty,
-      responseFields = Seq.empty,
-      hasBCE = false
-    )))
+trait TLMuxInOuts
+    extends TLStreamMux
+    with MuxInOuts[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle] {
+  val ioMem = mem.map { m =>
+    {
+      val ioMemNode = BundleBridgeSource(() =>
+        TLBundle(
+          TLBundleParameters(
+            addressBits = 32,
+            dataBits = beatBytes * 8,
+            sourceBits = 1,
+            sinkBits = 1,
+            sizeBits = 1,
+            //TODO: CHIPYARD: figure this out
+            echoFields = Seq.empty,
+            requestFields = Seq.empty,
+            responseFields = Seq.empty,
+            hasBCE = false
+          )
+        )
+      )
 
-    m :=
-      BundleBridgeToTL(TLClientPortParameters(Seq(TLClientParameters("bundleBridgeToAXI4")))) :=
-      ioMemNode
+      m :=
+        BundleBridgeToTL(TLClientPortParameters(Seq(TLClientParameters("bundleBridgeToAXI4")))) :=
+        ioMemNode
 
-    val ioMem = InModuleBody { ioMemNode.makeIO() }
-    ioMem
-  }}
+      val ioMem = InModuleBody { ioMemNode.makeIO() }
+      ioMem
+    }
+  }
 }
 
 class AXI4StreamMuxTester(c: AXI4StreamMux with AXI4MuxInOuts) extends StreamMuxTester(c) with AXI4MasterModel {
@@ -159,7 +182,7 @@ class TLStreamMuxTester(c: TLStreamMux with TLMuxInOuts) extends StreamMuxTester
 class AXI4StreamSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
   def axi4(nInputs: Int, nOutputs: Int): Unit = {
-    val lm = LazyModule(new AXI4StreamMux(AddressSet(0x0, 0xFF), beatBytes = 4) with AXI4MuxInOuts {
+    val lm = LazyModule(new AXI4StreamMux(AddressSet(0x0, 0xff), beatBytes = 4) with AXI4MuxInOuts {
       def nIn = nInputs
 
       def nOut = nOutputs
@@ -168,7 +191,7 @@ class AXI4StreamSpec extends AnyFlatSpec with ChiselScalatestTester with Matcher
   }
 
   def tl(nInputs: Int, nOutputs: Int): Unit = {
-    val lm = LazyModule(new TLStreamMux(AddressSet(0x0, 0xFF), beatBytes = 4) with TLMuxInOuts {
+    val lm = LazyModule(new TLStreamMux(AddressSet(0x0, 0xff), beatBytes = 4) with TLMuxInOuts {
       def nIn = nInputs
 
       def nOut = nOutputs

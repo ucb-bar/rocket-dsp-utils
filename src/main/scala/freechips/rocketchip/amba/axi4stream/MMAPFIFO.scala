@@ -152,7 +152,7 @@ class APBInStreamOutFIFOInternalModule(outer: APBInStreamOutFIFOInternal) extend
 
   stream.head.bits.last := RegNext(count === csrEnd)
 }
-*/
+ */
 /*
 package tester {
 
@@ -215,4 +215,4 @@ object JustForNow {
     chiseltest.iotesters.Driver.execute(Array("--backend-name", "firrtl", "-fiwv"), dut) { c=> new tester.MMAPFIFOTester(c) }
   }
 }
-*/
+ */

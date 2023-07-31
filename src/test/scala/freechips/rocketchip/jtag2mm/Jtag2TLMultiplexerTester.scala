@@ -24,11 +24,11 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends PeekPokeTester(d
   }
 
   def jtagSend(
-    data:                BigInt,
-    dataLength:          Int,
+    data:               BigInt,
+    dataLength:         Int,
     dataNotInstruction: Boolean = true,
-    stateResetNotIdle: Boolean = true,
-    stepSize:            Int = 1
+    stateResetNotIdle:  Boolean = true,
+    stepSize:           Int = 1
   ) {
 
     if (stateResetNotIdle) {
@@ -103,19 +103,19 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends PeekPokeTester(d
   step(1)
   peek(dut.outStream.bits.data)
   expect(dut.outStream.bits.data, 0)
-  
+
 //  updatableDspVerbose.withValue(false) {
   {
     jtagReset(stepSize)
-    
-    // write value 0x08 to address 0x00 
+
+    // write value 0x08 to address 0x00
     jtagSend(BigInt("0010", 2), 4, false, true, stepSize)
     jtagSend(BigInt("0" * 64, 2), 64, true, false, stepSize)
     jtagSend(BigInt("0011", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 56 ++ "00001000", 2), 64, true, false, stepSize)
     jtagSend(BigInt("0001", 2), 4, false, false, stepSize)
   }
-    
+
   step(100)
   peek(dut.outStream.bits.data)
   expect(dut.outStream.bits.data, 8)
@@ -136,22 +136,22 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends PeekPokeTester(d
     jtagSend(BigInt("0" * 56 ++ "00001000", 2), 64, true, false, stepSize)
     jtagSend(BigInt("1000", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 6 ++ "10", 2), 8, true, false, stepSize)
-    
+
     // set data value for the first burst write transaction to 0x18
     jtagSend(BigInt("1010", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 6 ++ "00", 2), 8, true, false, stepSize)
     jtagSend(BigInt("1011", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 56 ++ "00011000", 2), 64, true, false, stepSize)
-    
+
     // set data value for the second burst write transaction to 0x00
     jtagSend(BigInt("1010", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 6 ++ "01", 2), 8, true, false, stepSize)
     jtagSend(BigInt("1011", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 56 ++ "00000000", 2), 64, true, false, stepSize)
-    
+
     // initiate burst write transactions
     jtagSend(BigInt("1001", 2), 4, false, false, stepSize)
-  
+
     poke(dut.ioJTAG.jtag.TCK, 0)
     step(stepSize)
     poke(dut.ioJTAG.jtag.TCK, 1)
@@ -199,10 +199,10 @@ class Jtag2TLMultiplexerTester(dut: Jtag2TLMultiplexer) extends PeekPokeTester(d
     jtagSend(BigInt("0" * 64, 2), 64, true, false, stepSize)
     jtagSend(BigInt("1000", 2), 4, false, false, stepSize)
     jtagSend(BigInt("0" * 6 ++ "11", 2), 8, true, false, stepSize)
-    
+
     // initiate burst read transactions
     jtagSend(BigInt("1100", 2), 4, false, false, stepSize)
-    
+
     var i = 0
     while (i < 32 * 4) {
       poke(dut.ioJTAG.jtag.TCK, 1)

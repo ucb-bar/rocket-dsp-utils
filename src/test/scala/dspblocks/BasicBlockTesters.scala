@@ -8,8 +8,11 @@ import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.diplomacy.LazyModuleImp
 import freechips.rocketchip.tilelink.TLBundle
 
-abstract class PassthroughTester[D, U, EO, EI, B <: Data](dut: Passthrough[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B])
-extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel[LazyModuleImp] {
+abstract class PassthroughTester[D, U, EO, EI, B <: Data](
+  dut: Passthrough[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B]
+) extends PeekPokeTester(dut.module)
+    with MemTester
+    with AXI4StreamModel[LazyModuleImp] {
   resetMem()
 
   val in = dut.in.getWrappedValue
@@ -40,24 +43,26 @@ extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel[LazyModul
   expect(out.valid, 0)
 }
 
-class APBPassthroughTester(c: APBPassthrough with APBStandaloneBlock)
-  extends PassthroughTester(c) with APBMemTester {
+class APBPassthroughTester(c: APBPassthrough with APBStandaloneBlock) extends PassthroughTester(c) with APBMemTester {
   def memAPB = c.ioMem.get.getWrappedValue
 }
 
 class AXI4PassthroughTester(c: AXI4Passthrough with AXI4StandaloneBlock)
-  extends PassthroughTester(c) with AXI4MemTester {
+    extends PassthroughTester(c)
+    with AXI4MemTester {
   def memAXI = c.ioMem.get.getWrappedValue
 }
 
-class TLPassthroughTester(c: TLPassthrough with TLStandaloneBlock)
-  extends PassthroughTester(c) with TLMemTester {
+class TLPassthroughTester(c: TLPassthrough with TLStandaloneBlock) extends PassthroughTester(c) with TLMemTester {
   override def memTL: TLBundle = c.ioMem.get.getWrappedValue
 }
 
-abstract class ByteRotateTester[D, U, EO, EI, B <: Data] (dut: ByteRotate[D, U, EO, EI, B] with
-  StandaloneBlock[D, U, EO, EI, B]) extends PeekPokeTester(dut.module) with MemTester with AXI4StreamModel[LazyModuleImp with BRModuleImp] {
-  val in  = dut.in.getWrappedValue
+abstract class ByteRotateTester[D, U, EO, EI, B <: Data](
+  dut: ByteRotate[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B]
+) extends PeekPokeTester(dut.module)
+    with MemTester
+    with AXI4StreamModel[LazyModuleImp with BRModuleImp] {
+  val in = dut.in.getWrappedValue
   val out = dut.out.getWrappedValue
   val n = in.bits.params.n
 
@@ -98,12 +103,13 @@ class TLByteRotateTester(c: TLByteRotate with TLStandaloneBlock) extends ByteRot
   def memTL = c.ioMem.get.getWrappedValue
 }
 
-abstract class PTBRTester[D, U, EO, EI, B <: Data]
-(
-  dut: Chain[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B],
+abstract class PTBRTester[D, U, EO, EI, B <: Data](
+  dut:       Chain[D, U, EO, EI, B] with StandaloneBlock[D, U, EO, EI, B],
   depthAddr: BigInt,
-  rotAddr: BigInt
-) extends PeekPokeTester(dut.module.asInstanceOf[LazyModuleImp]) with MemTester with AXI4StreamModel[LazyModuleImp] {
+  rotAddr:   BigInt
+) extends PeekPokeTester(dut.module.asInstanceOf[LazyModuleImp])
+    with MemTester
+    with AXI4StreamModel[LazyModuleImp] {
   resetMem()
 
   val in = dut.in.getWrappedValue
@@ -144,16 +150,19 @@ abstract class PTBRTester[D, U, EO, EI, B <: Data]
 }
 
 class APBPTBRTester(c: APBChain with APBStandaloneBlock, depthAddr: BigInt, rotAddr: BigInt)
-  extends PTBRTester(c, depthAddr, rotAddr) with APBMemTester {
+    extends PTBRTester(c, depthAddr, rotAddr)
+    with APBMemTester {
   def memAPB = c.ioMem.get.getWrappedValue
 }
 
 class AXI4PTBRTester(c: AXI4Chain with AXI4StandaloneBlock, depthAddr: BigInt, rotAddr: BigInt)
-  extends PTBRTester(c, depthAddr, rotAddr) with AXI4MemTester {
+    extends PTBRTester(c, depthAddr, rotAddr)
+    with AXI4MemTester {
   def memAXI = c.ioMem.get.getWrappedValue
 }
 
-class TLPTBRTester(c: TLChain with TLStandaloneBlock, depthAddr: BigInt, rotAddr:BigInt)
-  extends PTBRTester(c, depthAddr, rotAddr) with TLMemTester {
+class TLPTBRTester(c: TLChain with TLStandaloneBlock, depthAddr: BigInt, rotAddr: BigInt)
+    extends PTBRTester(c, depthAddr, rotAddr)
+    with TLMemTester {
   def memTL = c.ioMem.get.getWrappedValue
 }

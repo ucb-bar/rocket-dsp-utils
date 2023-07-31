@@ -9,15 +9,13 @@ trait WithSync {
   val sync = Output(Bool())
 }
 
-class ValidWithSync[+T <: Data](gen: T) extends Valid[T](gen) with WithSync {
-}
+class ValidWithSync[+T <: Data](gen: T) extends Valid[T](gen) with WithSync {}
 
 object ValidWithSync {
   def apply[T <: Data](gen: T) = new ValidWithSync(gen)
 }
 
-class DecoupledWithSync[+T <: Data](gen: T) extends DecoupledIO[T](gen) with WithSync {
-}
+class DecoupledWithSync[+T <: Data](gen: T) extends DecoupledIO[T](gen) with WithSync {}
 
 object DecoupledWithSync {
   def apply[T <: Data](gen: T) = new DecoupledWithSync(gen)

@@ -38,7 +38,7 @@ trait APBMasterModel extends dspblocks.MemMasterModel {
   }
 
   def memReadWord(addr: BigInt): BigInt = apbRead(addr)
-  def apbRead(addr: Int): BigInt =
+  def apbRead(addr:     Int): BigInt =
     apbRead(BigInt(addr))
 
   def apbRead(addr: BigInt): BigInt = {

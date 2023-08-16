@@ -9,7 +9,8 @@ class AXI4StreamAsyncCrossingSource(sync: Option[Int]) extends LazyModule()(Para
   val node = AXI4StreamAsyncSourceNode(sync)
 
   lazy val module = new LazyModuleImp(this) {
-    (node.in zip node.out) foreach { case ((in, edgeIn), (out, edgeOut)) =>
+    (node.in.zip(node.out)).foreach {
+      case ((in, edgeIn), (out, edgeOut)) =>
         val psync = sync.getOrElse(edgeOut.bundle.async.sync)
         val params = edgeOut.slave.async.copy(sync = psync)
         out <> ToAsyncBundle(in, params)
@@ -26,11 +27,13 @@ object AXI4StreamAsyncCrossingSource {
   def apply(): AXI4StreamAsyncSourceNode = apply(None)
 }
 
-class AXI4StreamAsyncCrossingSink(params: AsyncQueueParams = AsyncQueueParams()) extends LazyModule()(Parameters.empty) {
+class AXI4StreamAsyncCrossingSink(params: AsyncQueueParams = AsyncQueueParams())
+    extends LazyModule()(Parameters.empty) {
   val node = AXI4StreamAsyncSinkNode(params)
 
   lazy val module = new LazyModuleImp(this) {
-    (node.in zip node.out) foreach { case ((in, edgeIn), (out, edgeOut)) =>
+    (node.in.zip(node.out)).foreach {
+      case ((in, edgeIn), (out, edgeOut)) =>
         out <> FromAsyncBundle(in, params.sync)
     }
   }

@@ -3,11 +3,12 @@
 package craft
 
 import chisel3._
-import dsptools.DspTester
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import chiseltest.ChiselScalatestTester
+import chiseltest.iotesters.PeekPokeTester
 
-class SRMemModule( dut: (UInt, Bool) => UInt ) extends Module {
+class SRMemModule(dut: (UInt, Bool) => UInt) extends Module {
   val io = IO(new Bundle {
     val in = Input(UInt(10.W))
     val en = Input(Bool())
@@ -18,21 +19,24 @@ class SRMemModule( dut: (UInt, Bool) => UInt ) extends Module {
 }
 
 // expected_output < 0 means don't care
-class SRMemTester( dut: SRMemModule, input: Seq[(Int, Boolean)], expected_output: Seq[Int], verbose: Boolean = true)
-  extends DspTester(dut) {
-  input.zip(expected_output).foreach({case ((num, valid), expected) =>
-    poke(dut.io.in, num)
-    poke(dut.io.en, valid)
-    if (expected >= 0) {
-      expect(dut.io.out, expected.U)
-    }
-    step(1)
-  })
+class SRMemTester(dut: SRMemModule, input: Seq[(Int, Boolean)], expected_output: Seq[Int], verbose: Boolean = true)
+    extends PeekPokeTester(dut) {
+  input
+    .zip(expected_output)
+    .foreach({
+      case ((num, valid), expected) =>
+        poke(dut.io.in, num)
+        poke(dut.io.en, valid)
+        if (expected >= 0) {
+          expect(dut.io.out, expected.U)
+        }
+        step(1)
+    })
 }
 
 //noinspection RedundantDefaultArgument,RedundantDefaultArgument,RedundantDefaultArgument,RedundantDefaultArgument
-class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
-  behavior of "ShiftRegisterMem"
+class ShiftRegisterMemSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
+  behavior.of("ShiftRegisterMem")
 
   val testVector: Seq[(Int, Boolean)] = Seq(
     1 -> true,
@@ -52,16 +56,17 @@ class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
 
   val X = -1
 
-  def runTest (dut : (UInt, Bool) => UInt, expected: Seq[Int]) =
-    chisel3.iotesters.Driver.execute(Array(
-      "--backend-name", "treadle"), () => new SRMemModule(dut)) {
-      c => new SRMemTester(c, testVector, expected)
-    } should be (true)
+  def runTest(dut: (UInt, Bool) => UInt, expected: Seq[Int]): Unit = {
+    test(new SRMemModule(dut)).runPeekPoke { c =>
+      new SRMemTester(c, testVector, expected)
+    }
+  }
 
   it should "work with single-ported memories, an enable, and an even shift" in {
     def testMem(in: UInt, en: Bool): UInt = ShiftRegisterMem(in, 6, en, use_sp_mem = true)
 
-    runTest(testMem _,
+    runTest(
+      testMem _,
       //Seq(X, X, X, X, X, X, X, 1, 2, 3, 4, 5, 0)
       Seq(X, X, X, X, X, X, X, 1, 1, 2, 3, 4, 5)
     )
@@ -70,15 +75,14 @@ class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
   it should "work with single-ported memories, no enable, and an even shift" in {
     def testMem(in: UInt, en: Bool) = ShiftRegisterMem(in, 6, use_sp_mem = true)
 
-    runTest(testMem _,
-      Seq(X, X, X, X, X, X, 1, 6, 2, 3, 4, 5, 0)
-    )
+    runTest(testMem _, Seq(X, X, X, X, X, X, 1, 6, 2, 3, 4, 5, 0))
   }
 
   it should "work with dual-ported memories, an enable, and an odd shift" in {
     def testMem(in: UInt, en: Bool): UInt = ShiftRegisterMem(in, 5, en, use_sp_mem = false)
 
-    runTest(testMem _,
+    runTest(
+      testMem _,
       //Seq(X, X, X, X, X, X, 1, 2, 3, 4, 5, 0, 0)
       Seq(X, X, X, X, X, X, 1, 2, 2, 3, 4, 5, 0)
     )
@@ -87,7 +91,8 @@ class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
   it should "work with dual-ported memories, an enable, and an even shift" in {
     def testMem(in: UInt, en: Bool): UInt = ShiftRegisterMem(in, 6, en, use_sp_mem = false)
 
-    runTest(testMem _,
+    runTest(
+      testMem _,
       //Seq(X, X, X, X, X, X, X, 1, 2, 3, 4, 5, 0)
       Seq(X, X, X, X, X, X, X, 1, 1, 2, 3, 4, 5)
     )
@@ -96,17 +101,13 @@ class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
   it should "work with dual-ported memories, no enable, and an odd shift" in {
     def testMem(in: UInt, en: Bool) = ShiftRegisterMem(in, 5, use_sp_mem = false)
 
-    runTest(testMem _,
-      Seq(X, X, X, X, X, 1, 6, 2, 3, 4, 5, 0, 0)
-    )
+    runTest(testMem _, Seq(X, X, X, X, X, 1, 6, 2, 3, 4, 5, 0, 0))
   }
 
   it should "work with dual-ported memories, no enable, and an even shift" in {
     def testMem(in: UInt, en: Bool) = ShiftRegisterMem(in, 6, use_sp_mem = false)
 
-    runTest(testMem _,
-      Seq(X, X, X, X, X, X, 1, 6, 2, 3, 4, 5, 0)
-    )
+    runTest(testMem _, Seq(X, X, X, X, X, X, 1, 6, 2, 3, 4, 5, 0))
   }
 
   it should "work with delay 0" in {
@@ -119,15 +120,11 @@ class ShiftRegisterMemSpec extends AnyFlatSpec with Matchers {
   it should "work with delay 1, and no enable" in {
     def testMem(in: UInt, en: Bool) = ShiftRegisterMem(in, 1)
 
-    runTest(testMem _,
-      Seq(X, 1, 6, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0)
-    )
+    runTest(testMem _, Seq(X, 1, 6, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0))
   }
   it should "work with delay 1, and an enable" in {
     def testMem(in: UInt, en: Bool) = ShiftRegisterMem(in, 1, en)
 
-    runTest(testMem _,
-      Seq(X, 1, 1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0)
-    )
+    runTest(testMem _, Seq(X, 1, 1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0))
   }
 }

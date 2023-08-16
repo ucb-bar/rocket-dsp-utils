@@ -30,7 +30,7 @@ trait APBBasicBlock extends APBDspBlock with APBHasCSR {
 trait AXI4BasicBlock extends AXI4DspBlock with AXI4HasCSR {
   def beatBytes = 8
   def csrAddress = AddressSet(0x0, 0xff)
-  override val mem = Some(AXI4RegisterNode(address = csrAddress, beatBytes=beatBytes))
+  override val mem = Some(AXI4RegisterNode(address = csrAddress, beatBytes = beatBytes))
 }
 
 trait TLBasicBlock extends TLDspBlock with TLHasCSR {
@@ -47,8 +47,7 @@ trait TLBasicBlock extends TLDspBlock with TLHasCSR {
   override val mem = Some(TLRegisterNode(address = Seq(csrAddress), device = device, beatBytes = beatBytes))
 }
 
-case class PassthroughParams
-(
+case class PassthroughParams(
   depth: Int = 0
 ) {
   require(depth >= 0, "Passthrough delay must be non-negative")
@@ -59,7 +58,8 @@ case object PassthroughDepth extends CSRField {
 }
 
 abstract class Passthrough[D, U, EO, EI, B <: Data](val params: PassthroughParams)(implicit p: Parameters)
-  extends DspBlock[D, U, EO, EI, B] with HasCSR {
+    extends DspBlock[D, U, EO, EI, B]
+    with HasCSR {
   val streamNode = AXI4StreamIdentityNode()
 
   lazy val module = new LazyModuleImp(this) {
@@ -73,46 +73,76 @@ abstract class Passthrough[D, U, EO, EI, B <: Data](val params: PassthroughParam
 }
 
 class AHBPassthrough(params: PassthroughParams)(implicit p: Parameters)
-  extends Passthrough[AHBMasterPortParameters, AHBSlavePortParameters, AHBEdgeParameters, AHBEdgeParameters,
-    AHBSlaveBundle](params) with AHBSlaveBasicBlock
+    extends Passthrough[
+      AHBMasterPortParameters,
+      AHBSlavePortParameters,
+      AHBEdgeParameters,
+      AHBEdgeParameters,
+      AHBSlaveBundle
+    ](params)
+    with AHBSlaveBasicBlock
 
 class APBPassthrough(params: PassthroughParams)(implicit p: Parameters)
-  extends Passthrough[APBMasterPortParameters, APBSlavePortParameters, APBEdgeParameters, APBEdgeParameters,
-    APBBundle](params) with APBBasicBlock
+    extends Passthrough[
+      APBMasterPortParameters,
+      APBSlavePortParameters,
+      APBEdgeParameters,
+      APBEdgeParameters,
+      APBBundle
+    ](params)
+    with APBBasicBlock
 
 class AXI4Passthrough(params: PassthroughParams)(implicit p: Parameters)
-  extends Passthrough[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters,
-    AXI4Bundle](params) with AXI4BasicBlock
+    extends Passthrough[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ](params)
+    with AXI4BasicBlock
 
 class TLPassthrough(params: PassthroughParams)(implicit p: Parameters)
-  extends Passthrough[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle](params)
+    extends Passthrough[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle](params)
     with TLBasicBlock
 
 case object ByteRotateAmount extends CSRField {
   override val name = "byteRotationAmount"
 }
 
-abstract class ByteRotate[D, U, EO, EI, B <: Data]()(implicit p: Parameters) extends DspBlock[D, U, EO, EI, B] with HasCSR {
+trait BRModuleImp {
+  val in:         Seq[AXI4StreamBundle]
+  val out:        Seq[AXI4StreamBundle]
+  val n:          Int
+  val nWidth:     Int
+  val byteRotate: UInt
+
+  def rotateBytes(u: UInt, n: Int, rot: Int): UInt
+}
+
+abstract class ByteRotate[D, U, EO, EI, B <: Data]()(implicit p: Parameters)
+    extends DspBlock[D, U, EO, EI, B]
+    with HasCSR {
   val streamNode = AXI4StreamIdentityNode()
 
-  lazy val module = new LazyModuleImp(this) {
-    val (in, _)  = streamNode.in.unzip
-    val (out, _) = streamNode.out.unzip
-    val n = in.head.bits.params.n
-    val nWidth = log2Ceil(n) + 1
+  lazy val module = new LazyModuleImp(this) with BRModuleImp {
+    override val (in, _) = streamNode.in.unzip
+    override val (out, _) = streamNode.out.unzip
+    override val n = in.head.bits.params.n
+    override val nWidth = log2Ceil(n) + 1
 
-    val byteRotate = RegInit(0.U(nWidth.W))
+    override val byteRotate = RegInit(0.U(nWidth.W))
 
     def rotateBytes(u: UInt, n: Int, rot: Int): UInt = {
-      Cat(u(8*rot-1, 0), u(8*n-1, 8*rot))
+      Cat(u(8 * rot - 1, 0), u(8 * n - 1, 8 * rot))
     }
 
     out.head.valid := in.head.valid
-    in.head.ready  := out.head.ready
-    out.head.bits  := in.head.bits
+    in.head.ready := out.head.ready
+    out.head.bits := in.head.bits
 
     for (i <- 1 until n) {
-      when (byteRotate === i.U) {
+      when(byteRotate === i.U) {
         out.head.bits.data := rotateBytes(in.head.bits.data, n, i)
       }
     }
@@ -123,18 +153,36 @@ abstract class ByteRotate[D, U, EO, EI, B <: Data]()(implicit p: Parameters) ext
   }
 }
 
-class AHBByteRotate()(implicit  p: Parameters) extends
-  ByteRotate[AHBMasterPortParameters, AHBSlavePortParameters, AHBEdgeParameters, AHBEdgeParameters, AHBSlaveBundle]()(p)
-  with AHBSlaveBasicBlock
+class AHBByteRotate()(implicit p: Parameters)
+    extends ByteRotate[
+      AHBMasterPortParameters,
+      AHBSlavePortParameters,
+      AHBEdgeParameters,
+      AHBEdgeParameters,
+      AHBSlaveBundle
+    ]()(p)
+    with AHBSlaveBasicBlock
 
-class APBByteRotate()(implicit  p: Parameters) extends
-  ByteRotate[APBMasterPortParameters, APBSlavePortParameters, APBEdgeParameters, APBEdgeParameters, APBBundle]()(p)
-  with APBBasicBlock
+class APBByteRotate()(implicit p: Parameters)
+    extends ByteRotate[
+      APBMasterPortParameters,
+      APBSlavePortParameters,
+      APBEdgeParameters,
+      APBEdgeParameters,
+      APBBundle
+    ]()(p)
+    with APBBasicBlock
 
-class AXI4ByteRotate()(implicit  p: Parameters) extends
-  ByteRotate[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters, AXI4Bundle]()(p)
-  with AXI4BasicBlock
+class AXI4ByteRotate()(implicit p: Parameters)
+    extends ByteRotate[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ]()(p)
+    with AXI4BasicBlock
 
-class TLByteRotate()(implicit  p: Parameters) extends
-  ByteRotate[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle]()(p)
-  with TLBasicBlock
+class TLByteRotate()(implicit p: Parameters)
+    extends ByteRotate[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle]()(p)
+    with TLBasicBlock

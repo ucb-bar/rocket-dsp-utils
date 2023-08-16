@@ -4,12 +4,10 @@ package freechips.rocketchip.jtag2mm
 
 import chisel3._
 import chisel3.util._
-import chisel3.experimental.{ChiselEnum, IO}
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.tilelink.{TLToBundleBridge, _}
-
+import freechips.rocketchip.tilelink._
 
 class JtagToMasterControllerIO(irLength: Int, beatBytes: Int) extends JtagBlockIO(irLength) {
   val dataOut = Output(UInt((beatBytes * 8).W))
@@ -119,8 +117,8 @@ class JtagController(irLength: Int, initialInstruction: BigInt, beatBytes: Int) 
 }
 
 object StateTL extends ChiselEnum {
-    val sIdle, sSetDataA, sSetReadAddress, sDataForward, sSetDataABurst, sIncrementWriteBurst, sSetReadAddressBurst,
-      sIncrementReadBurst, sDataForwardBurst, sDataForward2Burst = Value
+  val sIdle, sSetDataA, sSetReadAddress, sDataForward, sSetDataABurst, sIncrementWriteBurst, sSetReadAddressBurst,
+    sIncrementReadBurst, sDataForwardBurst, sDataForward2Burst = Value
 }
 
 class JTAGToMasterTL[D, U, E, O, B <: Data](irLength: Int, initialInstruction: BigInt, beatBytes: Int, burstMaxNum: Int)
@@ -130,7 +128,7 @@ class JTAGToMasterTL[D, U, E, O, B <: Data](irLength: Int, initialInstruction: B
 
   val node = Some(
     TLClientNode(
-      Seq(TLClientPortParameters(Seq(TLClientParameters(name = "JTAGToMasterOut", sourceId = IdRange(0, 4)))))
+      Seq(TLMasterPortParameters.v1(Seq(TLMasterParameters.v1(name = "JTAGToMasterOut", sourceId = IdRange(0, 4)))))
     )
   )
 
@@ -157,7 +155,7 @@ class JTAGToMasterTL[D, U, E, O, B <: Data](irLength: Int, initialInstruction: B
     controller.io.dataIn := DontCare
 
     val state = RegInit(StateTL.sIdle)
-    
+
     val currentInstruction = RegInit(UInt(irLength.W), initialInstruction.U)
     currentInstruction := controller.io.output.instruction
 
@@ -438,8 +436,7 @@ class TLJTAGToMasterBlock(
   beatBytes:          Int = 4,
   addresses:          AddressSet,
   burstMaxNum:        Int = 8
-)(
-  implicit p: Parameters)
+)(implicit p:         Parameters)
     extends JTAGToMasterTL[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle](
       irLength,
       initialInstruction,
@@ -465,7 +462,7 @@ class TLJTAGToMasterBlock(
     io2
   }
 
-  val managerParams = TLManagerParameters(
+  val managerParams = TLSlaveParameters.v1(
     address = Seq(addresses),
     resources = device.reg,
     regionType = RegionType.UNCACHED,
@@ -487,9 +484,9 @@ class TLJTAGToMasterBlock(
 }
 
 object StateAXI4 extends ChiselEnum {
-  val sIdle, sSetDataAndAddress, sResetCounterW, sSetReadyB, sSetReadAddress, sResetCounterR, sSetReadyR,
-    sDataForward, sSetDataAndAddressBurst, sResetCounterWBurst, sSetReadyBBurst, sSetReadAddressBurst,
-    sResetCounterRBurst, sSetReadyRBurst, sDataForwardBurst, sDataForward2Burst = Value
+  val sIdle, sSetDataAndAddress, sResetCounterW, sSetReadyB, sSetReadAddress, sResetCounterR, sSetReadyR, sDataForward,
+    sSetDataAndAddressBurst, sResetCounterWBurst, sSetReadyBBurst, sSetReadAddressBurst, sResetCounterRBurst,
+    sSetReadyRBurst, sDataForwardBurst, sDataForward2Burst = Value
 }
 
 class JTAGToMasterAXI4(irLength: Int, initialInstruction: BigInt, beatBytes: Int, address: AddressSet, burstMaxNum: Int)
@@ -869,8 +866,7 @@ class AXI4JTAGToMasterBlock(
   beatBytes:          Int = 4,
   addresses:          AddressSet,
   burstMaxNum:        Int = 8
-)(
-  implicit p: Parameters)
+)(implicit p:         Parameters)
     extends JTAGToMasterAXI4(irLength, initialInstruction, beatBytes, addresses, burstMaxNum) {
   require(burstMaxNum <= 128)
 

@@ -1,4 +1,4 @@
-package freechips.rocketchip.amba.axi4stream
+//package freechips.rocketchip.amba.axi4stream
 
 /*
 class APBInStreamOutFIFO(val csrBase: Int, val memAddress: AddressSet, val beatBytes: Int = 4)(implicit p: Parameters) extends LazyModule with APBHasCSR with APBDspBlockWithBus
@@ -140,7 +140,7 @@ class APBInStreamOutFIFOInternalModule(outer: APBInStreamOutFIFOInternal) extend
     stream.head.bits.data := streamDataReg
   }
 
-  when (stream.head.fire()) {
+  when (stream.head.fire) {
     streamDataRegValid := false.B
     advanceCount := true.B
   }
@@ -152,7 +152,7 @@ class APBInStreamOutFIFOInternalModule(outer: APBInStreamOutFIFOInternal) extend
 
   stream.head.bits.last := RegNext(count === csrEnd)
 }
-*/
+ */
 /*
 package tester {
 
@@ -212,7 +212,7 @@ object JustForNow {
     val dut = () => LazyModule(new APBInStreamOutFIFO(0, AddressSet(0x200, 0xff), 8)(p)).module
     chisel3.Driver.execute(Array("-X", "verilog"), dut)
 
-    chisel3.iotesters.Driver.execute(Array("--backend-name", "firrtl", "-fiwv"), dut) { c=> new tester.MMAPFIFOTester(c) }
+    chiseltest.iotesters.Driver.execute(Array("--backend-name", "firrtl", "-fiwv"), dut) { c=> new tester.MMAPFIFOTester(c) }
   }
 }
-*/
+ */

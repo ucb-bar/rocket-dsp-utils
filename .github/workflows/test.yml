@@ -12,11 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
       - name: Setup Scala
-        uses: olafurpg/setup-scala@v10
+        uses: coursier/setup-action@v1
+      - name: Setup Verilator
+        run: sudo apt-get update -y && sudo apt-get install -y verilator
       - name: Cache
-        uses: coursier/cache-action@v5
+        uses: coursier/cache-action@v6
+      - name: Formatting check
+        run: sbt scalafmtCheckAll
       - name: Documentation
         id: doc
         run: sbt doc

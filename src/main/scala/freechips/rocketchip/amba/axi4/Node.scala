@@ -6,23 +6,24 @@ import freechips.rocketchip.diplomacy._
 object AXI4BundleBridgeImp extends BundleBridgeImp[AXI4Bundle]
 
 case class AXI4ToBundleBridgeNode(slaveParams: AXI4SlavePortParameters)(implicit valName: ValName)
-  extends MixedAdapterNode(AXI4Imp, AXI4BundleBridgeImp)(
-    dFn = { masterParams =>
-      BundleBridgeParams(() => AXI4Bundle(AXI4BundleParameters(masterParams, slaveParams)))
-    },
-    uFn = { mp => slaveParams }
-)
+    extends MixedAdapterNode(AXI4Imp, AXI4BundleBridgeImp)(
+      dFn = { masterParams =>
+        BundleBridgeParams(() => AXI4Bundle(AXI4BundleParameters(masterParams, slaveParams)))
+      },
+      uFn = { mp => slaveParams }
+    )
 
 object AXI4ToBundleBridgeNode {
-  def apply(slaveParams: AXI4SlaveParameters, beatBytes: Int)(implicit  valName: ValName): AXI4ToBundleBridgeNode =
+  def apply(slaveParams: AXI4SlaveParameters, beatBytes: Int)(implicit valName: ValName): AXI4ToBundleBridgeNode =
     new AXI4ToBundleBridgeNode(AXI4SlavePortParameters(Seq(slaveParams), beatBytes))
 }
 
 class AXI4ToBundleBridge(slaveParams: AXI4SlavePortParameters)(implicit p: Parameters) extends LazyModule {
   val node = AXI4ToBundleBridgeNode(slaveParams)
   lazy val module = new LazyModuleImp(this) {
-    (node.in zip node.out) foreach { case ((in, _), (out, _)) =>
-      out <> in
+    (node.in.zip(node.out)).foreach {
+      case ((in, _), (out, _)) =>
+        out <> in
     }
   }
 }
@@ -38,12 +39,12 @@ object AXI4ToBundleBridge {
 }
 
 case class BundleBridgeToAXI4Node(masterParams: AXI4MasterPortParameters)(implicit valName: ValName)
-  extends MixedAdapterNode(AXI4BundleBridgeImp, AXI4Imp)(
-    dFn = { mp =>
-      masterParams
-    },
-    uFn = { slaveParams => BundleBridgeParams(None) }
-  )
+    extends MixedAdapterNode(AXI4BundleBridgeImp, AXI4Imp)(
+      dFn = { mp =>
+        masterParams
+      },
+      uFn = { slaveParams => BundleBridgeParams(None) }
+    )
 
 object BundleBridgeToAXI4Node {
   def apply(masterParams: AXI4MasterParameters)(implicit valName: ValName): BundleBridgeToAXI4Node = {
@@ -54,8 +55,9 @@ object BundleBridgeToAXI4Node {
 class BundleBridgeToAXI4(masterParams: AXI4MasterPortParameters)(implicit p: Parameters) extends LazyModule {
   val node = BundleBridgeToAXI4Node(masterParams)
   lazy val module = new LazyModuleImp(this) {
-    (node.in zip node.out) foreach { case ((in, _), (out, _)) =>
-      out <> in
+    (node.in.zip(node.out)).foreach {
+      case ((in, _), (out, _)) =>
+        out <> in
     }
   }
 }

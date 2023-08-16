@@ -3,20 +3,21 @@
 package freechips.rocketchip.jtag2mm
 
 import chisel3._
-import chisel3.experimental.{IO}
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import dspblocks._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
 import freechips.rocketchip.regmapper.RegField
-import freechips.rocketchip.tilelink.{BundleBridgeToTL, _}
-
+import freechips.rocketchip.tilelink._
 
 abstract class TestMultiplexer[D, U, EO, EI, B <: Data]()(implicit p: Parameters)
-    extends DspBlock[D, U, EO, EI, B] with HasCSR {
-    
-  val streamNode = AXI4StreamMasterNode(Seq(AXI4StreamMasterPortParameters(Seq(AXI4StreamMasterParameters("out", n = 8)))))
+    extends DspBlock[D, U, EO, EI, B]
+    with HasCSR {
+
+  val streamNode = AXI4StreamMasterNode(
+    Seq(AXI4StreamMasterPortParameters(Seq(AXI4StreamMasterParameters("out", n = 8))))
+  )
 
   lazy val module = new LazyModuleImp(this) {
     val (out, _) = streamNode.out.unzip
@@ -34,32 +35,33 @@ abstract class TestMultiplexer[D, U, EO, EI, B <: Data]()(implicit p: Parameters
 class TLMultiplexer()(implicit p: Parameters)
     extends TestMultiplexer[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle]()
     with TLBasicBlock
-    
+
 class Jtag2TLMultiplexer(
   irLength:           Int,
   initialInstruction: BigInt,
   beatBytes:          Int,
   jtagAddresses:      AddressSet,
-  maxBurstNum:        Int)
-    extends LazyModule()(Parameters.empty) {
+  maxBurstNum:        Int
+) extends LazyModule()(Parameters.empty) {
 
   val multiplexerModule = LazyModule(new TLMultiplexer() {
 
-    def standaloneParams = TLBundleParameters(
-      addressBits = 16,
-      dataBits = 64,
-      sourceBits = 16,
-      sinkBits = 16,
-      sizeBits = 3,
-      //TODO: CHIUPYARD: figure this out
-      echoFields = Nil,
-      requestFields = Nil,
-      responseFields = Nil,
-      hasBCE = false
-    )
+    def standaloneParams =
+      TLBundleParameters(
+        addressBits = 16,
+        dataBits = 64,
+        sourceBits = 16,
+        sinkBits = 16,
+        sizeBits = 3,
+        //TODO: CHIUPYARD: figure this out
+        echoFields = Nil,
+        requestFields = Nil,
+        responseFields = Nil,
+        hasBCE = false
+      )
 
     //TODO: CHIPYARD
-    val clientParams = TLClientParameters(
+    val clientParams = TLMasterParameters.v1(
       name = "BundleBridgeToTL",
       sourceId = IdRange(0, 1),
       nodePath = Seq(),
@@ -77,7 +79,7 @@ class Jtag2TLMultiplexer(
     val ioMem = mem.map { m =>
       {
         val ioMemNode = BundleBridgeSource(() => TLBundle(standaloneParams))
-        m := BundleBridgeToTL(TLClientPortParameters(Seq(clientParams))) := ioMemNode
+        m := BundleBridgeToTL(TLMasterPortParameters.v1(Seq(clientParams))) := ioMemNode
         val ioMem = InModuleBody { ioMemNode.makeIO() }
         ioMem
       }
@@ -115,22 +117,28 @@ class Jtag2TLMultiplexer(
 }
 
 class AXI4Multiplexer()(implicit p: Parameters)
-    extends TestMultiplexer[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters, AXI4Bundle]
+    extends TestMultiplexer[
+      AXI4MasterPortParameters,
+      AXI4SlavePortParameters,
+      AXI4EdgeParameters,
+      AXI4EdgeParameters,
+      AXI4Bundle
+    ]
     with AXI4BasicBlock
-    
+
 class Jtag2AXI4Multiplexer(
   irLength:           Int,
   initialInstruction: BigInt,
   beatBytes:          Int,
   jtagAddresses:      AddressSet,
-  maxBurstNum:        Int)
-    extends LazyModule()(Parameters.empty) {
+  maxBurstNum:        Int
+) extends LazyModule()(Parameters.empty) {
 
   val multiplexerModule = LazyModule(new AXI4Multiplexer() {
 
-    def standaloneParams = AXI4BundleParameters(addrBits = 8, dataBits = beatBytes*8, idBits = 1)
-    val ioMem = mem.map { 
-      m => {
+    def standaloneParams = AXI4BundleParameters(addrBits = 8, dataBits = beatBytes * 8, idBits = 1)
+    val ioMem = mem.map { m =>
+      {
         val ioMemNode = BundleBridgeSource(() => AXI4Bundle(standaloneParams))
         m := BundleBridgeToAXI4(AXI4MasterPortParameters(Seq(AXI4MasterParameters("bundleBridgeToAXI4")))) := ioMemNode
         val ioMem = InModuleBody { ioMemNode.makeIO() }

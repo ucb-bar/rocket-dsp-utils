@@ -3,7 +3,7 @@
 package freechips.rocketchip.jtag2mm
 
 import chisel3._
-import chisel3.experimental.DataMirror
+import chisel3.reflect.DataMirror
 import chisel3.internal.firrtl.KnownWidth
 import chisel3.util._
 
@@ -21,7 +21,7 @@ class ShifterIO extends Bundle {
 
   /** Sets a output shifter IO's control signals from a input shifter IO's control signals.
     */
-  def chainControlFrom(in: ShifterIO) {
+  def chainControlFrom(in: ShifterIO): Unit = {
     shift := in.shift
     capture := in.capture
     update := in.update

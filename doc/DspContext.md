@@ -8,7 +8,7 @@ We need to come up with better names, but at least this makes it easy to search 
 
 # DspContext
 DspContext allows you to control how some operations are performed within a scope.
-```
+```scala
   DspContext.alter(newContext) {
     // new scope with settings from newContext
   }
@@ -56,9 +56,11 @@ The `DspContext` case class contains the following fields:
   * `val prod = DspContext.withNumMulPipes(2) { a context_* b }`
   * `val sum = DspContext.withNumAddPipes(1) { a context_+ b }`
 * **Example:** Change several options locally:
-  ```
+  ```scala
   val prod = DspContext.alter(DspContext.current.copy(trimType = NoTrim, binaryPointGrowth = 3, numMulPipes = 2)) { a * b }
   ```
 * Get the number pipeline registers used in a Complex multiply:
-  * `val delay = DspContext.current.complexMulDly`
+  * ```scala
+    val delay = DspContext.current.complexMulDly
+    ```
 

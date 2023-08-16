@@ -32,7 +32,7 @@ The AXI4-Stream bundles can be used directly, but the recommended way to use AXI
 This means there is a two-stage elaboration: in the first, parameters are elaborated by a `Node`, and in the second hardware is generated, giving you a `Bundle` to work with.
 For example:
 
-```
+```scala
 class LM extends LazyModule {
   // used in stage 1 of elaboration
   // identity node enforces in and out have same parameters
@@ -76,7 +76,7 @@ However, the built-in rocket `CrossingWrapper` doesn't know about this implement
 
 Here's a sketch of what clock crossings with AXI4-Stream might look like.
 
-```
+```scala
   val island = LazyModule(new CrossingWrapper(AsynchronousCrossing()) with HasAXI4StreamCrossing)
   island.clock := someOtherClock
   val streamBlock = island { LazyModule(new WhateverStreamModule) }
@@ -97,7 +97,7 @@ After making the master and slave drivers, the test code should enqueue transact
 
 The `PassthroughTester` in dsptools is a good example:
 
-```
+```scala
   val master = bindMaster(in)
   val slave = bindSlave(out)
 

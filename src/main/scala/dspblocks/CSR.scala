@@ -38,8 +38,8 @@ case object CSRCustom extends CSRType
 case class RegInfo(tpe: CSRType, width: Width, init: Option[BigInt])
 
 object CSR {
+
   /**
-    *
     */
   type Map = scala.collection.Map[CSRField, RegInfo]
 }
@@ -52,7 +52,7 @@ trait CSRField {
 }
 
 object CSRField {
-  def apply(n: String) = new CSRField { override val name = n }
+  def apply(n:   String) = new CSRField { override val name = n }
   def unapply(c: CSRField): Some[String] = Some(c.name)
 }
 
@@ -60,11 +60,9 @@ object CSRField {
   * Mixin for adding CSRs to
   */
 trait HasCSR {
-  def regmap(mapping: RegField.Map*)
+  def regmap(mapping: RegField.Map*): Unit
 
-  def addCSR(address: Int, field: Seq[RegField]): Unit = {
-
-  }
+  def addCSR(address: Int, field: Seq[RegField]): Unit = {}
 }
 /*  // implicit def csrFieldToString(in: CSRField): String = in.name
   val csrMap = scala.collection.mutable.Map[CSRField, RegInfo]()
@@ -110,20 +108,20 @@ trait HasCSR {
 
 trait AXI4HasCSR extends AXI4DspBlock with HasCSR {
   override val mem: Some[AXI4RegisterNode]
-  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping:_*)
+  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping: _*)
 }
 
 trait TLHasCSR extends TLDspBlock with HasCSR {
   override val mem: Some[TLRegisterNode]
-  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping:_*)
+  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping: _*)
 }
 
 trait AHBSlaveHasCSR extends AHBSlaveDspBlock with HasCSR {
   override val mem: Some[AHBRegisterNode]
-  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping:_*)
+  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping: _*)
 }
 
 trait APBHasCSR extends APBDspBlock with HasCSR {
   override val mem: Some[APBRegisterNode]
-  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping:_*)
+  override def regmap(mapping: (Int, Seq[RegField])*): Unit = mem.get.regmap(mapping: _*)
 }

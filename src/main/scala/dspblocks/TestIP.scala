@@ -1,20 +1,68 @@
 package dspblocks
 
 import breeze.math.Complex
-import chisel3._
-import chisel3.experimental.FixedPoint
-import chisel3.internal.firrtl.KnownBinaryPoint
+import chisel3.{fromDoubleToLiteral => _, fromIntToBinaryPoint => _, _}
+import chiseltest.iotesters.PeekPokeTester
+import fixedpoint._
 import dsptools._
+import dsptools.misc.DspTesterUtilities
 import dsptools.numbers._
+import freechips.rocketchip.amba.apb.APBMasterModel
+import freechips.rocketchip.amba.axi4.AXI4MasterModel
+import freechips.rocketchip.tilelink.TLMasterModel
 import spire.math.ConvertableFrom
 import spire.implicits._
 
-
 trait MemTester {
   def resetMem(): Unit
-  def readAddr(addr: BigInt): BigInt
+  def readAddr(addr:  BigInt): BigInt
   def writeAddr(addr: BigInt, value: BigInt): Unit
   def writeAddr(addr: Int, value: Int): Unit = writeAddr(BigInt(addr), BigInt(value))
+}
+
+trait TLMemTester extends TLMasterModel {
+  self: PeekPokeTester[_] =>
+  def resetMem(): Unit = {
+    tlReset()
+  }
+
+  def readAddr(addr: BigInt): BigInt = {
+    tlReadWord(addr)
+  }
+
+  def writeAddr(addr: BigInt, value: BigInt): Unit = {
+    tlWriteWord(addr, value)
+  }
+}
+
+trait APBMemTester extends APBMasterModel {
+  self: PeekPokeTester[_] =>
+  def resetMem(): Unit = {
+    apbReset()
+  }
+
+  def readAddr(addr: BigInt): BigInt = {
+    apbRead(addr)
+  }
+
+  def writeAddr(addr: BigInt, value: BigInt): Unit = {
+    apbWrite(addr, value)
+  }
+}
+
+trait AXI4MemTester extends AXI4MasterModel {
+  self: PeekPokeTester[_] =>
+  def resetMem(): Unit = {
+    axiReset()
+  }
+
+  def readAddr(addr: BigInt): BigInt = {
+    axiReadWord(addr)
+  }
+
+  def writeAddr(addr: BigInt, value: BigInt): Unit = {
+    axiWriteWord(addr, value)
+  }
 }
 
 object PeekPokePackers {
@@ -38,20 +86,22 @@ object PeekPokePackers {
     }
   }
 
-  def pack[T <: Data, V : ConvertableFrom](value: V, gen: T): BigInt = gen match {
-    case _:DspReal => throw DspException("unsupported")
-    case f:FixedPoint => f.binaryPoint match {
-      case KnownBinaryPoint(bp) =>
-        val bigIntValue = FixedPoint.toBigInt(value.toDouble(), bp)
-        signedToUnsigned(bigIntValue, gen.getWidth)
-      case _ => throw DspException("Must poke FixedPoint with known binary point")
+  def pack[T <: Data, V: ConvertableFrom](value: V, gen: T): BigInt =
+    gen match {
+      case _: DspReal => DspTesterUtilities.doubleToBigIntBits(value.toDouble)
+      case f: FixedPoint =>
+        f.binaryPoint match {
+          case KnownBinaryPoint(bp) =>
+            val bigIntValue = FixedPoint.toBigInt(value.toDouble, bp)
+            signedToUnsigned(bigIntValue, gen.getWidth)
+          case _ => throw DspException("Must poke FixedPoint with known binary point")
+        }
+      case _: UInt => value.toBigInt
+      case _: SInt => signedToUnsigned(value.toBigInt, gen.getWidth)
     }
-    case _: UInt => value.toBigInt
-    case _: SInt => signedToUnsigned(value.toBigInt, gen.getWidth)
-  }
 
   def packDouble[T <: Data](value: Double, gen: T): BigInt = pack(value, gen)
-  def packInt[T <: Data](value: Int, gen: T): BigInt = pack(value, gen)
+  def packInt[T <: Data](value:    Int, gen:    T): BigInt = pack(value, gen)
   def packBigInt[T <: Data](value: BigInt, gen: T): BigInt = pack(value, gen)
 
   def pack[T <: Data](value: Complex, gen: DspComplex[T]): BigInt = {
@@ -61,30 +111,32 @@ object PeekPokePackers {
   }
 
   def pack[T <: Data](value: Seq[Complex], gen: Seq[DspComplex[T]]): BigInt = {
-    value.zip(gen).foldLeft(BigInt(0)) { case (bi, (elem, genElem)) =>
-      (bi << genElem.getWidth) | pack(elem, genElem)
+    value.zip(gen).foldLeft(BigInt(0)) {
+      case (bi, (elem, genElem)) =>
+        (bi << genElem.getWidth) | pack(elem, genElem)
     }
   }
 
-  def unpackDouble[T <: Data](value: BigInt, gen: T): Double = gen match {
-    case _:DspReal => throw DspException("unsupported")
-    case f:FixedPoint => f.binaryPoint match {
-      case KnownBinaryPoint(b) => FixedPoint.toDouble(unsignedToSigned(value, f.getWidth), b)
-      case _ => throw DspException("Must poke FixedPoint with known binary point")
+  def unpackDouble[T <: Data](value: BigInt, gen: T): Double =
+    gen match {
+      case _: DspReal => DspTesterUtilities.bigIntBitsToDouble(value)
+      case f: FixedPoint =>
+        f.binaryPoint match {
+          case KnownBinaryPoint(b) => FixedPoint.toDouble(unsignedToSigned(value, f.getWidth), b)
+          case _                   => throw DspException("Must poke FixedPoint with known binary point")
+        }
+      case _: UInt => value.toDouble
+      case _: SInt => unsignedToSigned(value, gen.getWidth).toDouble
     }
-    case _:UInt => value.toDouble
-    case _:SInt => unsignedToSigned(value, gen.getWidth).toDouble
-  }
 
   def unpack[T <: Data](value: BigInt, gen: DspComplex[T]): Complex = {
     val real = unpackDouble(value >> gen.imag.getWidth, gen.real)
-    val imag = unpackDouble(value &  ((BigInt(1) << gen.imag.getWidth) - 1), gen.imag)
+    val imag = unpackDouble(value & ((BigInt(1) << gen.imag.getWidth) - 1), gen.imag)
     Complex(real, imag)
   }
 
   def unpack[T <: Data](values: Seq[BigInt], gen: Seq[DspComplex[T]]): Seq[Complex] = {
     values.zip(gen).map { case (v, g) => unpack(v, g) }
   }
-
 
 }

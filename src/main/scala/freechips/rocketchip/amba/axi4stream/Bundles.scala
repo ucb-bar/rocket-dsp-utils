@@ -14,13 +14,12 @@ abstract class AXI4StreamBundleBase(params: AXI4StreamBundleParameters) extends 
   * All fields of the AXI4 Stream interface except ready and valid
   * @param params Bundle parameters
   */
-class AXI4StreamBundlePayload(params: AXI4StreamBundleParameters) extends AXI4StreamBundleBase(params)
-{
+class AXI4StreamBundlePayload(params: AXI4StreamBundleParameters) extends AXI4StreamBundleBase(params) {
   val data = Output(UInt(params.dataBits.W))
   val strb = Output(UInt(params.strbBits.W))
   val keep = Output(UInt(params.keepBits.W))
   val last = Output(Bool())
-  val id   = Output(UInt(params.i.W))
+  val id = Output(UInt(params.i.W))
   val dest = Output(UInt(params.d.W))
   val user = Output(UInt(params.u.W))
 
@@ -31,18 +30,18 @@ class AXI4StreamBundlePayload(params: AXI4StreamBundleParameters) extends AXI4St
   * AXI4 Stream bundle with ready and valid
   * @param params Bundle parameters
   */
-class AXI4StreamBundle(val params: AXI4StreamBundleParameters) extends IrrevocableIO(new AXI4StreamBundlePayload(params)) {
-}
+class AXI4StreamBundle(val params: AXI4StreamBundleParameters)
+    extends IrrevocableIO(new AXI4StreamBundlePayload(params)) {}
 
 /**
   * AXI4 Stream bundle with valid only (no ready)
   * @param params Bundle parameters
   */
-class AXI4StreamValidBundle(val params: AXI4StreamBundleParameters) extends ValidIO(new AXI4StreamBundlePayload(params)) {
-}
+class AXI4StreamValidBundle(val params: AXI4StreamBundleParameters)
+    extends ValidIO(new AXI4StreamBundlePayload(params)) {}
 
-object AXI4StreamBundle
-{
+object AXI4StreamBundle {
+
   /**
     * Factory for making AXI4StreamBundle
     * @param params Bundle parameters
@@ -51,8 +50,8 @@ object AXI4StreamBundle
   def apply(params: AXI4StreamBundleParameters) = new AXI4StreamBundle(params)
 }
 
-object AXI4StreamValidBundle
-{
+object AXI4StreamValidBundle {
+
   /**
     * Factory for Making AXI4StreamValidBundle
     * @param params Bundle parameters
@@ -66,10 +65,10 @@ object AXI4StreamValidBundle
   * @param params
   */
 class AXI4StreamAsyncBundle(params: AXI4StreamAsyncBundleParameters)
-  extends AsyncBundle(new AXI4StreamBundlePayload(params.base).cloneType, params.async) {
-}
+    extends AsyncBundle(new AXI4StreamBundlePayload(params.base).cloneType, params.async) {}
 
 object AXI4StreamAsyncBundle {
+
   /**
     * Factory for making AXI4StreamAsyncBundle
     * @param params

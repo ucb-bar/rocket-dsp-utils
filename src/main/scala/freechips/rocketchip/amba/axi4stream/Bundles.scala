@@ -2,13 +2,13 @@ package freechips.rocketchip.amba.axi4stream
 
 import chisel3._
 import chisel3.util._
-import freechips.rocketchip.util.{AsyncBundle, GenericParameterizedBundle}
+import freechips.rocketchip.util.{AsyncBundle}
 
 /**
   * Base class for all AXI4Stream bundles
   * @param params Bundle parameters
   */
-abstract class AXI4StreamBundleBase(params: AXI4StreamBundleParameters) extends GenericParameterizedBundle(params)
+abstract class AXI4StreamBundleBase(val params: AXI4StreamBundleParameters) extends Bundle
 
 /**
   * All fields of the AXI4 Stream interface except ready and valid

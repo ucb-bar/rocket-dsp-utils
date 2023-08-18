@@ -73,6 +73,10 @@ val rocketSettings = Seq(
     Test / parallelExecution := false,
 )
 
+lazy val managedDepSettings = Seq(
+  scalacOptions += "-Wconf:any:is"
+)
+
 publishMavenStyle := true
 
 Test / publishArtifact := false
@@ -104,6 +108,7 @@ val rocketChipDir = file("tools/rocket-chip")
 lazy val hardfloat  = freshProject("hardfloat", rocketChipDir / "hardfloat")
   .settings(chiselSettings)
   .settings(commonSettings)
+  .settings(managedDepSettings)
   .settings(
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "3.2.0" % "test"
@@ -112,6 +117,7 @@ lazy val hardfloat  = freshProject("hardfloat", rocketChipDir / "hardfloat")
 
 lazy val rocketMacros  = (project in rocketChipDir / "macros")
   .settings(commonSettings)
+  .settings(managedDepSettings)
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
@@ -120,12 +126,14 @@ lazy val rocketMacros  = (project in rocketChipDir / "macros")
 
 lazy val cde = (project in rocketChipDir / "cde")
   .settings(commonSettings)
+  .settings(managedDepSettings)
   .settings(Compile / scalaSource := baseDirectory.value / "cde/src/chipsalliance/rocketchip")
 
 lazy val rocketchip = freshProject("rocketchip", rocketChipDir)
   .dependsOn(hardfloat, rocketMacros, cde)
   .settings(commonSettings)
   .settings(chiselSettings)
+  .settings(managedDepSettings)
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
@@ -137,7 +145,6 @@ lazy val rocketchip = freshProject("rocketchip", rocketChipDir)
   .settings( // Settings for scalafix
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
-    scalacOptions += "-Ywarn-unused"
   )
 lazy val rocketLibDeps = (rocketchip / Keys.libraryDependencies)
 
@@ -176,7 +183,6 @@ val `rocket-dsp-utils` = (project in file("."))
   .settings(
     chiselSettings,
     commonSettings,
-    scalacOptions += raw"-Wconf:src=tools/.*:s",
     libraryDependencies ++= rocketLibDeps.value,
     libraryDependencies ++= Seq(
       "edu.berkeley.cs" %% "chiseltest" % "0.6.0",

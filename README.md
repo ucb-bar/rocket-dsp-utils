@@ -1,5 +1,5 @@
-ROCKET-DSP-UTILS
-===================
+rocket-dsp-utils
+================
 
 [![Test](https://github.com/ucb-bar/rocket-dsp-utils/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/ucb-bar/rocket-dsp-utils/actions/workflows/test.yml)
 
@@ -41,11 +41,8 @@ val yourproject = (project in file("."))
 
 ---
 
-
-
 Questions:
 - Questionable code is marked with //TODO: CHIPYARD
 
 
-This code is maintained by [Chick](https://github.com/chick)
-
+This code was maintained by [Chick](https://github.com/chick)

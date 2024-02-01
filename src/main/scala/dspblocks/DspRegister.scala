@@ -10,7 +10,8 @@ import freechips.rocketchip.regmapper._
 import freechips.rocketchip.tilelink._
 import freechips.rocketchip.interrupts._
 
-trait DspRegister[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B] { this: RegisterRouter with HasInterruptSources =>
+trait DspRegister[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B] {
+  this: RegisterRouter with HasInterruptSources =>
 
   /**
     * Maximum length of the vector register
@@ -158,7 +159,9 @@ class TLDspRegister(
   devname:      String = "vreg",
   concurrency:  Int = 1
 )(implicit p:   Parameters)
-    extends RegisterRouter(RegisterRouterParams(devname, Seq("ucb-bar,vreg"), baseAddr, beatBytes=8, concurrency=concurrency))(p)
+    extends RegisterRouter(
+      RegisterRouterParams(devname, Seq("ucb-bar,vreg"), baseAddr, beatBytes = 8, concurrency = concurrency)
+    )(p)
     with HasTLControlRegMap
     with HasInterruptSources
     with DspRegister[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle]
@@ -168,7 +171,9 @@ class TLDspRegister(
 
 class AXI4DspRegister(val len: Int, val mapMem: Boolean = true, val baseAddr: BigInt = 0, concurrency: Int = 4)(implicit
   p:                           Parameters
-) extends RegisterRouter(RegisterRouterParams("vreg", Seq("ucb-bar,vreg"), baseAddr, beatBytes=8, concurrency=concurrency))(p)
+) extends RegisterRouter(
+      RegisterRouterParams("vreg", Seq("ucb-bar,vreg"), baseAddr, beatBytes = 8, concurrency = concurrency)
+    )(p)
     with HasAXI4ControlRegMap
     with HasInterruptSources
     with DspRegister[

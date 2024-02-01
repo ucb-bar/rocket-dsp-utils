@@ -12,7 +12,8 @@ import freechips.rocketchip.regmapper._
 import freechips.rocketchip.tilelink._
 import freechips.rocketchip.interrupts._
 
-trait DspQueue[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B] { this: RegisterRouter with HasInterruptSources =>
+trait DspQueue[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B] {
+  this: RegisterRouter with HasInterruptSources =>
 
   /**
     * Depth of queue
@@ -56,7 +57,7 @@ trait DspQueue[D, U, EO, EI, B <: Data] extends DspBlock[D, U, EO, EI, B] { this
 
 class TLDspQueue(val depth: Int, val baseAddr: BigInt = 0, devname: String = "vqueue", concurrency: Int = 1)(implicit
   p:                        Parameters
-) extends RegisterRouter(RegisterRouterParams(devname, Nil, baseAddr, beatBytes=8, concurrency=concurrency))(p)
+) extends RegisterRouter(RegisterRouterParams(devname, Nil, baseAddr, beatBytes = 8, concurrency = concurrency))(p)
     with HasTLControlRegMap
     with HasInterruptSources
     with DspQueue[TLClientPortParameters, TLManagerPortParameters, TLEdgeOut, TLEdgeIn, TLBundle]
@@ -65,7 +66,7 @@ class TLDspQueue(val depth: Int, val baseAddr: BigInt = 0, devname: String = "vq
 }
 
 class AXI4DspQueue(val depth: Int, val baseAddr: BigInt = 0, concurrency: Int = 4)(implicit p: Parameters)
-    extends RegisterRouter(RegisterRouterParams("vqueue", Nil, baseAddr, beatBytes=8, concurrency=concurrency))(p)
+    extends RegisterRouter(RegisterRouterParams("vqueue", Nil, baseAddr, beatBytes = 8, concurrency = concurrency))(p)
     with HasAXI4ControlRegMap
     with HasInterruptSources
     with DspQueue[AXI4MasterPortParameters, AXI4SlavePortParameters, AXI4EdgeParameters, AXI4EdgeParameters, AXI4Bundle]
@@ -74,7 +75,7 @@ class AXI4DspQueue(val depth: Int, val baseAddr: BigInt = 0, concurrency: Int = 
 }
 
 class AHBDspQueue(val depth: Int, val baseAddr: BigInt = 0, concurrency: Int = 4)(implicit p: Parameters)
-    extends RegisterRouter(RegisterRouterParams("vqueue", Nil, baseAddr, beatBytes=8, concurrency=concurrency))(p)
+    extends RegisterRouter(RegisterRouterParams("vqueue", Nil, baseAddr, beatBytes = 8, concurrency = concurrency))(p)
     with HasAHBControlRegMap
     with HasInterruptSources
     with DspQueue[AHBMasterPortParameters, AHBSlavePortParameters, AHBEdgeParameters, AHBEdgeParameters, AHBSlaveBundle]
@@ -83,7 +84,7 @@ class AHBDspQueue(val depth: Int, val baseAddr: BigInt = 0, concurrency: Int = 4
 }
 
 class APBDspQueue(val depth: Int, val baseAddr: BigInt = 0, concurrency: Int = 4)(implicit p: Parameters)
-    extends RegisterRouter(RegisterRouterParams("vqueue", Nil, baseAddr, beatBytes=8, concurrency=concurrency))
+    extends RegisterRouter(RegisterRouterParams("vqueue", Nil, baseAddr, beatBytes = 8, concurrency = concurrency))
     with HasAPBControlRegMap
     with HasInterruptSources
     with DspQueue[APBMasterPortParameters, APBSlavePortParameters, APBEdgeParameters, APBEdgeParameters, APBBundle]

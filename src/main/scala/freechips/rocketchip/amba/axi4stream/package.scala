@@ -1,6 +1,9 @@
 package freechips.rocketchip.amba
 
-import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.diplomacy.{HasClockDomainCrossing}
+import org.chipsalliance.diplomacy._
+import org.chipsalliance.diplomacy.nodes._
+import org.chipsalliance.diplomacy.lazymodule._
 
 package object axi4stream {
   type AXI4StreamInwardNode = InwardNodeHandle[

@@ -7,7 +7,10 @@ import freechips.rocketchip.amba.ahb._
 import freechips.rocketchip.amba.apb._
 import freechips.rocketchip.amba.axi4._
 import freechips.rocketchip.amba.axi4stream._
-import freechips.rocketchip.diplomacy._
+import org.chipsalliance.diplomacy._
+import org.chipsalliance.diplomacy.nodes._
+import org.chipsalliance.diplomacy.bundlebridge._
+import org.chipsalliance.diplomacy.lazymodule._
 import freechips.rocketchip.tilelink._
 
 /**

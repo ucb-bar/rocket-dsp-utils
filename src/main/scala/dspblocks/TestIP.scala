@@ -1,7 +1,7 @@
 package dspblocks
 
 import breeze.math.Complex
-import chisel3.{fromDoubleToLiteral => _, fromIntToBinaryPoint => _, _}
+import chisel3._
 import chiseltest.iotesters.PeekPokeTester
 import fixedpoint._
 import dsptools._

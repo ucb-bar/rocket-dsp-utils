@@ -2,6 +2,7 @@ package freechips.rocketchip.amba.axi4stream
 
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
+import freechips.rocketchip.prci._
 import freechips.rocketchip.subsystem.CrossesToOnlyOneClockDomain
 
 case class AXI4StreamInwardCrossingHelper(name: String, scope: LazyScope, node: AXI4StreamInwardNode) {

@@ -1,6 +1,6 @@
 package freechips.rocketchip.amba
 
-import freechips.rocketchip.diplomacy.{HasClockDomainCrossing}
+import freechips.rocketchip.prci.{HasClockDomainCrossing}
 import org.chipsalliance.diplomacy._
 import org.chipsalliance.diplomacy.nodes._
 import org.chipsalliance.diplomacy.lazymodule._
